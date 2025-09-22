@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Garden</title>
+    <link rel="stylesheet" href="{{url_for('static', filename = 'style.css')}}" />
+     <link rel="stylesheet" href="{{url_for('static', filename = 'login.css')}}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet" />
+</head>
+
+<body>
+    <header class="head-nav">
+        <div class="head-wrapper">
+            <div class="head-bar-menu" id="bar-menu">
+                <h3 class="head-logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24">
+                        <path fill="#fff"
+                            d="M5 4h14q.425 0 .713.288T20 5t-.288.713T19 6H5q-.425 0-.712-.288T4 5t.288-.712T5 4m0 16q-.425 0-.712-.288T4 19v-5h-.175q-.475 0-.775-.363t-.2-.837l1-5q.075-.35.35-.575T4.825 7h14.35q.35 0 .625.225t.35.575l1 5q.1.475-.2.837t-.775.363H20v5q0 .425-.288.713T19 20t-.712-.288T18 19v-5h-4v5q0 .425-.288.713T13 20zm1-2h6v-4H6zm-.95-6h13.9zm0 0h13.9l-.6-3H5.65z" />
+                    </svg>The Garden
+                </h3>
+                <div class="head-menu">
+                    <ul class="list-menu" id="menu">
+                        {% if is_logged_in and is_admin %}
+                        <li><a href="{{ url_for('logout') }}">ออกจากระบบ</a></li>
+                        {% endif %}
+                        <li><a href="/login" id="self-store">สำหรับเจ้าของร้าน</a></li>
+                        <li><a href="/">หน้าหลัก</a></li>
+                        <li><a href="#">ติดตามออเดอร์</a></li>
+                    </ul>
+                    <div class="basket">
+                        <a href="" class="car-sell"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                viewBox="0 0 24 24">
+                                <path fill="#7C5E48"
+                                    d="M17 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2M1 2h3.27l.94 2H20a1 1 0 0 1 1 1c0 .17-.05.34-.12.5l-3.58 6.47c-.34.61-1 1.03-1.75 1.03H8.1l-.9 1.63l-.03.12a.25.25 0 0 0 .25.25H19v2H7a2 2 0 0 1-2-2c0-.35.09-.68.24-.96l1.36-2.45L3 4H1zm6 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2m9-7l2.78-5H6.14l2.36 5z" />
+                            </svg>ตะกร้า</a>
+                        <p id="quantity-menu">1</p>
+                    </div>
+                </div>
+                <div class="ham-menu" onclick="toggleHam()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 16 16">
+                        <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.5" d="M2.75 12.25h10.5m-10.5-4h10.5m-10.5-4h10.5" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+    {% block content %}{% endblock %}
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+     <script src="{{ url_for('static', filename='register.js') }}"></script>

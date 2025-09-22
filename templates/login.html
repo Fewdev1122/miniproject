@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block content %}
+  <section class="login-box">
+    <div class="container-box">
+      <div class="wrapper-box">
+        {% if session.get("is_admin") %}
+        <div class="already-login">
+          <h3>คุณเข้าสู่ระบบแล้ว</h3>
+      
+          <a href="/">กลับไปหน้าแรก</a>
+        </div>
+        {% else %}
+          <div class="name-login">
+            <h3>LOG IN</h3>
+          </div>
+          <form action="/login" method="post" class="form-login">
+            <div class="label">
+              <label>Email</label>
+            </div>
+            <input type="email" name="email" class="input-login">
+            <div class="label">
+              <label>Password</label>
+            </div>
+            <input type="password" name="password" class="input-login">
+            <div class="forgot-password"><a href="">หากลืมรหัสผ่าน</a></div>
+            <div class="sunmit-login">
+              <button id="login-button">เข้าสู่ระบบ</button>
+            </div>
+            <div class="register-go">
+              <a href="/register">สมัครบัญชีร้านค้า</a>
+            </div>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}

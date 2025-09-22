@@ -1,0 +1,267 @@
+:root{
+  --brown:#7C5E48;
+  --cream:#FDF6EC;
+  --white:#fff;
+  --black:#808080;
+  --brown-hover:#634a38;
+  --blue:#262c91;
+}
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Kanit", sans-serif;
+}
+
+.login-box{
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 3rem;
+}
+.register-box{
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+.container-box{
+  display: flex;
+  width: 427px;
+  height: 455px;
+  justify-content: center;
+  background-color: var(--cream);
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px var(--black);
+}
+
+.container-box-register{
+  display: flex;
+  width: 427px;
+  height: 630px;
+  justify-content: center;
+  background-color: var(--cream);
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px var(--black);
+}
+.wrapper-box{
+  justify-content: center;
+  width: 370px;
+  
+
+}
+.name-login{
+  display: flex;
+  margin-top: 24px;
+}
+.name-register{
+  display: flex;
+  margin-top: 24px;
+}
+.name-login h3{
+  font-size: 28px;
+  color: var(--brown);
+  width: 100%;
+  text-align: center;
+}
+.name-register h3{
+  font-size: 28px;
+  color: var(--brown);
+  width: 100%;
+  text-align: center;
+}
+.label{
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--brown);
+
+
+}
+.sunmit-login{
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+  margin-bottom: 1.6rem;
+}
+.sunmit-register{
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 1.5rem;
+  
+}
+.register-go{
+  display: flex;
+  justify-content: center;
+}
+.register-go a{
+  color: var(--brown);
+  font-weight: 500;
+  text-decoration:none;
+}
+.register-go a:hover{
+  text-decoration: underline;
+}
+.login-go{
+  display: flex;
+  justify-content: center;
+}
+.login-go a{
+  color: var(--brown);
+  font-weight: 500;
+  text-decoration:none;
+}
+.login-go a:hover{
+  text-decoration: underline;
+}
+#login-button{
+  width: 370px;
+  height: 50px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--brown);
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+}
+#login-button:hover{
+  transition: all 0.5s;
+  background-color: var(--brown-hover);
+}
+#register-button{
+  width: 370px;
+  height: 50px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--brown);
+  color: var(--white);
+  font-size: 20px;
+  cursor: pointer;
+}
+#register-button:hover{
+  transition: all 0.5s;
+  background-color: var(--brown-hover);
+}
+.input-login{
+  color: var(--brown-hover);
+  padding-left: 0.5rem;
+  font-size: 20px;
+  margin-top: 3px;
+  width: 370px;
+  height: 50px;
+  border-radius: 8px;
+  outline: none;
+  border: 1px solid var(--brown);
+  background-color: var(--cream);
+}
+.input-register{
+  color: var(--brown-hover);
+  padding-left: 0.5rem;
+  font-size: 20px;
+  margin-top: 3px;
+  width: 370px;
+  height: 50px;
+  border-radius: 8px;
+  outline: none;
+  border: 1px solid var(--brown);
+  background-color: var(--cream);
+}
+.forgot-password{
+  font-size: 16px;
+  margin-top: 5px;
+}
+.forgot-password a{
+  color: var(--brown);
+  font-weight: 400;
+  padding-left: 2px;
+  text-decoration: none;
+}
+.forgot-password a:hover{
+  text-decoration: underline;
+}
+.code-store{
+  color: var(--brown-hover);
+  padding-left: 0.5rem;
+  font-size: 20px;
+  margin-top: 3px;
+  width: 166px;
+  height: 43px;
+  border-radius: 8px;
+  outline: none;
+  border: 1px solid var(--brown);
+  background-color: var(--cream);
+}
+@media only screen and (max-width: 532px){
+  .container-box{
+    width: 350px;
+    height: 400px;
+  }
+  .input-login{
+    padding-left: 0.5rem;
+    font-size: 20px;
+    margin-top: 3px;
+    width: 330px;
+    height: 40px;
+  }
+  .label{
+    font-size: 16px;
+  }
+  .name-login h3{
+    font-size: 26px;
+  }
+  .form-login{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 0.5rem;
+  }
+  #login-button{
+    width: 330px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .sunmit-login{
+    margin-top: 20px;
+    margin-bottom: 1rem;
+  }
+
+  .container-box-register{
+    width: 350px;
+    height: 535px;
+  }
+  .input-register{
+    padding-left: 0.5rem;
+    font-size: 20px;
+    margin-top: 3px;
+    width: 330px;
+    height: 40px;
+  }
+  .label{
+    font-size: 16px;
+  }
+  .name-register h3{
+    font-size: 26px;
+  }
+  #form-register{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 0.5rem;
+  }
+  #register-button{
+    width: 330px;
+    height: 40px;
+    font-size: 20px;
+  }
+  .sunmit-register{
+    margin-top: 20px;
+    margin-bottom: 1rem;
+  }
+  .code-store{
+    height: 40px;    
+  }
+
+}
+

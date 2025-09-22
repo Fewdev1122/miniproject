@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block content %}
+  <section class="register-box">
+    <div class="container-box-register">
+      <div class="wrapper-box">
+        <div class="name-register">
+          <h3>Register</h3>
+        </div>
+        <form method="post" action="/register"  id="form-register">
+          <div class="label">
+            <label for="">Email</label>
+          </div>
+          <input type="email" name="email" class="input-register">
+          <div class="label">
+            <label for="">Password</label>
+          </div>
+          <input type="password" name="password" class="input-register">
+          <div class="label">
+            <label for="">Confirm password</label>
+          </div>
+          <input type="password" name="confirm" class="input-register">
+          <div class="label">
+            <label for="">Code store</label>
+          </div>
+          <input type="password" name="code" class="code-store">
+          <div class="sunmit-login">
+            <button id="register-button">สมัครบัญชี</button>
+          </div>
+          <div class="login-go">
+            <a href="{{ url_for('login') }}">คุณมีบัญชีอยู่แล้ว?</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}
