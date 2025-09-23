@@ -18,18 +18,19 @@
     font-family: "Kanit", sans-serif;
 }
 
+
+
 body {
-    background-color: var(--cream);
-    max-height: 900px;
+    background-color: var(--cream); 
     height: 100%;
-    overflow: hidden;
+    overflow: hidden;  
     position: relative;
 
 }
 
 .head-nav {
     display: flex;
-    height: 90px;
+    height: 80px;
     width: 100%;
     background-color: var(--brown);
     justify-content: center;
@@ -53,6 +54,7 @@ body {
 
 .head-menu {
     display: flex;
+    
 }
 
 .basket {
@@ -100,7 +102,16 @@ body {
 }
 
 .list-menu {
-    display: flex;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  left: 0;
+  z-index: 99999;
+}
+
+.list-menu.menu-active {
+  max-height: 500px; 
+  z-index: 99999;
 }
 
 .list-menu li {
@@ -108,18 +119,22 @@ body {
     list-style: none;
     height: 46px;
 }
-
+.list-menu .logout{
+    height: 46px;
+}
+.list-menu .logout a{
+    padding: 10px 0;
+}
 .list-menu li a {
     text-decoration: none;
-    color: var(--brown);
-    background-color: var(--cream-li);
+    color: var(--white);
     border-radius: 6px;
     font-size: 17px;
     height: 100%;
     display: flex;
     align-items: center;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 10px 16px;
+   
 }
 
 #self-store {
@@ -148,26 +163,26 @@ body {
     display: flex;
 }
 
-.menu-active {
-    display: block !important;
-}
+
 
 .grid {
     flex-direction: column;
     align-items: flex-start;
-
-
 }
 
 @media only screen and (min-width: 961px) {
-    .list-menu {
+     .list-menu {
         display: flex !important;
+        flex-direction: row;
+        position: static;  /* ปกติบน navbar */
+        max-height: none;
+        width: auto;
+        background: none;
     }
 
-    .grid {
-        flex-direction: row;
-        align-items: flex-start;
-
+    .list-menu li {
+        margin-left: 37px;
+        height: auto;
     }
 
 }
@@ -192,7 +207,24 @@ body {
     }
 
     .list-menu {
-        height: 100%;
+        display: flex; 
+        flex-direction: column;
+        max-height: 0; 
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        position: absolute;
+        top: 100%; 
+        left: -20px;
+        width: 1600px;
+        background-color: var(--brown);
+        z-index: 999;
+    }
+
+
+    .list-menu li {
+        margin: 0;
+        padding: 0.5rem 1rem;
+        height: auto;
     }
 
     .list-menu li a {
@@ -289,7 +321,7 @@ body {
 }
 
 .details {
-    height: 70px;
+    height: 60px;
     background-color: var(--brown);
     border-radius: 8px;
     display: flex;
@@ -366,7 +398,7 @@ body {
 
 .list-store-menu {
     margin-top: 1.5rem;
-    height: 470px;
+    height: 500px;
     overflow-y: auto;
     scrollbar-width: none;
     scroll-behavior: smooth;
@@ -795,7 +827,7 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .head-wrapper {
-        width: 90vw;  
+        width: 95vw;  
     }
 
     .head-logo {
@@ -813,6 +845,9 @@ input[type="number"]::-webkit-outer-spin-button {
     .list-store-box {
         max-width: 600px;  
         max-height: 500px;
+    }
+    .list-store-menu {
+        height: 590px;  
     }
 
     .img-menu {
@@ -873,4 +908,14 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .already-login a:hover {
     background: var(--brown-hover);
+  }
+
+  .logout{
+    display: flex;
+    align-items: center;
+    margin-left: 1.75rem;
+  }
+  .logout a{
+    display: flex;
+    align-items: center;
   }

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Garden</title>
     <link rel="stylesheet" href="{{url_for('static', filename = 'style.css')}}" />
-     <link rel="stylesheet" href="{{url_for('static', filename = 'login.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static', filename = 'login.css')}}" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -26,13 +26,21 @@
                 </h3>
                 <div class="head-menu">
                     <ul class="list-menu" id="menu">
-                        {% if is_logged_in and is_admin %}
-                        <li><a href="{{ url_for('logout') }}">ออกจากระบบ</a></li>
-                        {% endif %}
-                        <li><a href="/login" id="self-store">สำหรับเจ้าของร้าน</a></li>
                         <li><a href="/">หน้าหลัก</a></li>
+                        {% if session.get("is_admin") %}
+                        <li><a href="#">คำสั่งซื้อ</a></li>
+                        <li><a href="#">แดชบอร์ด</a></li>
+                        <li>
+                            <a href="{{ url_for('logout') }}" onclick="return confirm('คุณแน่ใจหรือไม่ที่จะออกจากระบบ?');" style="background-color: rgb(224, 67, 67);">Log out</a>
+                        </li>
+                        {% else %}
                         <li><a href="#">ติดตามออเดอร์</a></li>
+                        <li><a href="/login" id="self-store">สำหรับเจ้าของร้าน</a></li>
+                        {% endif %}
+
                     </ul>
+                    {% if session.get("is_admin") %}
+                    {% else %}
                     <div class="basket">
                         <a href="" class="car-sell"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24">
@@ -41,8 +49,10 @@
                             </svg>ตะกร้า</a>
                         <p id="quantity-menu">1</p>
                     </div>
+                    {% endif %}
+
                 </div>
-                <div class="ham-menu" onclick="toggleHam()">
+                <div class="ham-menu" id="ham-menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 16 16">
                         <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"
                             stroke-width="1.5" d="M2.75 12.25h10.5m-10.5-4h10.5m-10.5-4h10.5" />
@@ -53,4 +63,7 @@
     </header>
     {% block content %}{% endblock %}
     <script src="{{ url_for('static', filename='main.js') }}"></script>
-     <script src="{{ url_for('static', filename='register.js') }}"></script>
+    <script src="{{ url_for('static', filename='register.js') }}"></script>
+</body>
+
+</html>

@@ -1,20 +1,37 @@
-
 class HamburgerMenu {
-  constructor(menuId, navId) {
+  constructor(menuId, hamId) {
     this.menu = document.getElementById(menuId);
-    this.nav = document.getElementById(navId);
+    this.ham = document.getElementById(hamId);
+    this.init();
+  }
+
+  init() {
+    this.ham.addEventListener('click', () => this.toggle());
   }
 
   toggle() {
-    if (this.menu.className === 'list-menu') {
-      this.menu.className += ' menu-active';
-      this.nav.className += ' grid';
-    } else {
-      this.menu.className = 'list-menu';
-      this.nav.className = 'head-bar-menu';
-    }
+    this.menu.classList.toggle('menu-active');
   }
 }
+
+// เรียกใช้
+const ham = new HamburgerMenu('menu', 'ham-menu');
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const hamMenu = new HamburgerMenu('menu', 'bar-menu', 'ham-menu');
+  // ...existing code...
+});
+
+// ...existing code...
+
+// ======================= INIT =======================
+document.addEventListener('DOMContentLoaded', () => {
+  // Hamburger
+  const hamMenu = new HamburgerMenu('menu', 'bar-menu', 'ham-menu');
+
+  // ...existing code...
+});
 
 // 2. Category Filter
 class CategoryFilter {

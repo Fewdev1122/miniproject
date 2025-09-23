@@ -3,13 +3,7 @@
   <section class="login-box">
     <div class="container-box">
       <div class="wrapper-box">
-        {% if session.get("is_admin") %}
-        <div class="already-login">
-          <h3>คุณเข้าสู่ระบบแล้ว</h3>
-      
-          <a href="/">กลับไปหน้าแรก</a>
-        </div>
-        {% else %}
+        
           <div class="name-login">
             <h3>LOG IN</h3>
           </div>
@@ -30,7 +24,7 @@
               <a href="/register">สมัครบัญชีร้านค้า</a>
             </div>
           </form>
-        {% endif %}
+   
       </div>
     </div>
   </section>
