@@ -21,9 +21,10 @@
 
 
 body {
-    background-color: var(--cream); 
+    background-color: var(--cream);
     height: 100%;
-    overflow: hidden;  
+    overflow-x: hidden;  
+    overflow-y: hidden; 
     position: relative;
 
 }
@@ -39,7 +40,8 @@ body {
 
 .head-wrapper {
     display: flex;
-    width: 95vw;
+    width: 95%;
+    margin: 0 auto  ;
 }
 
 .head-bar-menu {
@@ -54,12 +56,23 @@ body {
 
 .head-menu {
     display: flex;
-    
+
 }
 
 .basket {
-    display: flex;
+    display: inline-block;
     position: relative;
+}
+.cart-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 50%;
 }
 
 #quantity-menu {
@@ -102,16 +115,16 @@ body {
 }
 
 .list-menu {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  left: 0;
-  z-index: 99999;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    left: 0;
+    z-index: 99999;
 }
 
 .list-menu.menu-active {
-  max-height: 500px; 
-  z-index: 99999;
+    max-height: 500px;
+    z-index: 99999;
 }
 
 .list-menu li {
@@ -119,12 +132,15 @@ body {
     list-style: none;
     height: 46px;
 }
-.list-menu .logout{
+
+.list-menu .logout {
     height: 46px;
 }
-.list-menu .logout a{
+
+.list-menu .logout a {
     padding: 10px 0;
 }
+
 .list-menu li a {
     text-decoration: none;
     color: var(--white);
@@ -134,7 +150,7 @@ body {
     display: flex;
     align-items: center;
     padding: 10px 16px;
-   
+
 }
 
 #self-store {
@@ -171,10 +187,11 @@ body {
 }
 
 @media only screen and (min-width: 961px) {
-     .list-menu {
+    .list-menu {
         display: flex !important;
         flex-direction: row;
-        position: static;  /* ปกติบน navbar */
+        position: static;
+        /* ปกติบน navbar */
         max-height: none;
         width: auto;
         background: none;
@@ -207,18 +224,20 @@ body {
     }
 
     .list-menu {
-        display: flex; 
+        display: flex;
         flex-direction: column;
-        max-height: 0; 
+        max-height: 0;
         overflow: hidden;
         transition: max-height 0.3s ease;
         position: absolute;
-        top: 100%; 
-        left: -20px;
-        width: 1600px;
+        top: 100%;
+        left: 0;
+        width: 100%;
         background-color: var(--brown);
         z-index: 999;
+   
     }
+
 
 
     .list-menu li {
@@ -468,7 +487,7 @@ body {
 .option-add {
     display: flex;
     justify-content: space-between;
-    margin-top: 0.75rem;
+    margin-top: 1rem;
     align-items: center;
 }
 
@@ -594,27 +613,32 @@ body {
         font-size: 16px;
         font-weight: 400;
     }
-    .detail-all{
+
+    .detail-all {
         padding: 0.25rem !important;
         height: auto !important;
     }
-    .option-add{
+
+    .option-add {
         margin-top: 0.25rem;
 
     }
+
     .option-menu li {
         margin-right: 0.25rem;
         height: 20px;
         padding: 0 0.25rem;
         font-size: 8px !important;
     }
+
     .add-menu {
         width: 35px;
         height: 20px;
         border-radius: 6px;
         font-size: 10px;
     }
-    #add_menu { 
+
+    #add_menu {
         padding: 0.5rem 1.5rem;
         border-radius: 20px;
         font-size: 13px !important;
@@ -804,7 +828,8 @@ input[type="number"]::-webkit-outer-spin-button {
     margin-bottom: 0.75rem;
 
 }
-.delAdmin{
+
+.delAdmin {
     background-color: var(--red);
     position: absolute;
     z-index: 9999;
@@ -817,7 +842,7 @@ input[type="number"]::-webkit-outer-spin-button {
     display: flex;
     padding: 0.5rem 0.5rem;
     cursor: pointer;
-  
+
 }
 
 @media only screen and (min-width: 1920px) {
@@ -827,11 +852,11 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .head-wrapper {
-        width: 95vw;  
+        width: 95vw;
     }
 
     .head-logo {
-        font-size: 28px; 
+        font-size: 28px;
     }
 
     .name-menu {
@@ -843,15 +868,16 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .list-store-box {
-        max-width: 600px;  
+        max-width: 600px;
         max-height: 500px;
     }
+
     .list-store-menu {
-        height: 590px;  
+        height: 590px;
     }
 
     .img-menu {
-        height: 300px;  
+        height: 300px;
     }
 
     .name-price {
@@ -863,9 +889,9 @@ input[type="number"]::-webkit-outer-spin-button {
     }
 
     .add-menu {
-        width: 100px;
-        height: 50px;
-        font-size: 18px;  
+        width: 80px;
+        height: 30px;
+        font-size: 18px;
     }
 
     .popup-form {
@@ -873,29 +899,31 @@ input[type="number"]::-webkit-outer-spin-button {
         padding: 2rem;
     }
 
-    .input-add, .detail-menu-add {
+    .input-add,
+    .detail-menu-add {
         font-size: 18px;
     }
 }
 
- .already-login {
+.already-login {
     text-align: center;
     padding: 20px;
-  }
+}
 
-  .already-login h3 {
+.already-login h3 {
     font-size: 22px;
-    color: #28a745; /* เขียว */
+    color: #28a745;
+    /* เขียว */
     margin-bottom: 10px;
-  }
+}
 
-  .already-login p {
+.already-login p {
     font-size: 16px;
     color: #333;
     margin-bottom: 15px;
-  }
+}
 
-  .already-login a {
+.already-login a {
     display: inline-block;
     padding: 8px 15px;
     background: var(--brown);
@@ -904,18 +932,142 @@ input[type="number"]::-webkit-outer-spin-button {
     text-decoration: none;
     font-size: 14px;
     transition: 0.3s;
-  }
+}
 
-  .already-login a:hover {
+.already-login a:hover {
     background: var(--brown-hover);
-  }
+}
 
-  .logout{
+.logout {
     display: flex;
     align-items: center;
     margin-left: 1.75rem;
-  }
-  .logout a{
+}
+
+.logout a {
     display: flex;
     align-items: center;
-  }
+}
+
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+}
+
+/* กล่อง Pop-up */
+.modal-content {
+  background: #ffffff;
+  padding: 20px;
+  margin: 10% auto;
+  width: 300px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+
+
+/* ==================== Modal ตะกร้า ==================== */
+#cartModal {
+    display: none; /* เริ่มต้นซ่อน */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* พื้นหลังมืดโปร่งแสง */
+}
+
+#cartModal .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+}
+
+/* ปุ่มปิด modal */
+#cartModal .close {
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* รายการตะกร้า */
+#cart-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#cart-list li {
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#cart-list li div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* ปุ่มลบสินค้า */
+#cart-list button.remove-item {
+    background-color: #ff4d4f;
+    border: none;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#cart-list button.remove-item:hover {
+    background-color: #d9363e;
+}
+
+/* รวมทั้งหมดและปุ่มสั่งซื้อ */
+.cart-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+#checkout {
+    background-color: var(--brown);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+#checkout:hover {
+    background-color: #1a1f70;
+}
+
