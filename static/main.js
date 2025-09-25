@@ -169,7 +169,6 @@ class MenuManager {
         }
     }
 
-    // เรียก API เพื่อลบเมนู
     async deleteMenu(id, btn) {
         try {
             const res = await fetch(`/api/menus/${id}`, { method: 'DELETE' });
@@ -186,24 +185,30 @@ class MenuManager {
         }
     }
 
-    // ลบ element ของเมนูออกจาก DOM
     removeMenuFromDOM(btn) {
         const box = btn.closest('.list-store-box');
         if (box) box.remove();
     }
 }
 
-// เรียกใช้งานเมื่อ DOM โหลดเสร็จ
+
+const buttons = document.querySelectorAll(".option-btn");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      // เอา active ออกจากทุกปุ่ม
+      buttons.forEach(b => b.classList.remove("active"));
+      // ใส่ active เฉพาะปุ่มที่คลิก
+      btn.classList.add("active");
+    });
+  });
+
+
 document.addEventListener('DOMContentLoaded', () => {
-    new MenuManager('#menu-list');   // ใส่ selector ของ container หลัก
+    new MenuManager('#menu-list'); 
 });
 
 
-
- 
-    
-
-// ======================= INIT =======================
 document.addEventListener('DOMContentLoaded', () => {
   // Hamburger
   const hamMenu = new HamburgerMenu('menu', 'bar-menu');
@@ -220,4 +225,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Popup
   const popupManager = new PopupManager('add_menu', 'popup', 'del-popup', 'bgblack', 'file', 'icon-up', 'img-suc');
   popupManager.init();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const badge = document.getElementById("cart-badge");
+  const cartBtn = document.getElementById("cart-btn");
+  const popup = document.getElementById("cart-popup");
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  badge.textContent = cart.length;
+
+  cartBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    popup.classList.toggle("hidden");
+    renderCart();
+  });
+
+  function renderCart() {
+    const itemsBox = document.getElementById("cart-items");
+    if (!itemsBox) return;
+    if (cart.length === 0) {
+      itemsBox.innerHTML = "<p>ไม่มีสินค้าในตะกร้า</p>";
+      return;
+    }
+    itemsBox.innerHTML = cart
+      .map((item) => `<div>${item.name} x ${item.qty}</div>`)
+      .join("");
+  }
 });
