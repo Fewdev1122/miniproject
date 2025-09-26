@@ -1,0 +1,3 @@
+qrcode
+CRC-ITU
+crc16

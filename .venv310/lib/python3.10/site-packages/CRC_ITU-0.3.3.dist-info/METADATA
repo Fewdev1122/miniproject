@@ -1,0 +1,57 @@
+Metadata-Version: 2.1
+Name: CRC-ITU
+Version: 0.3.3
+Summary: A crc-itu implementation with optional cython extension
+Home-page: https://github.com/ak64th/CRC-ITU
+Author: Elmer Yu
+Author-email: ak64th@gmail.com
+License: Apache 2.0
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+
+CRC-ITU |Build Status| |Coverage Status|
+========================================
+
+Installation
+------------
+
+Install universal wheel
+
+.. code:: bash
+
+    $ pip install CRC-ITU
+
+
+Install with cython extension
+
+.. code:: bash
+
+    $ pip install cython
+    $ pip install --no-binary :all: CRC-ITU
+
+
+Usage
+-----
+
+.. code:: python
+
+    from crc_itu import crc16
+    print(hex(crc16(b'your bytes')))
+
+.. |Build Status| image:: https://travis-ci.org/ak64th/CRC-ITU.svg?branch=master
+   :target: https://travis-ci.org/ak64th/CRC-ITU
+
+.. |Coverage Status| image:: https://coveralls.io/repos/github/ak64th/CRC-ITU/badge.svg?branch=master
+   :target: https://coveralls.io/github/ak64th/CRC-ITU?branch=master
+

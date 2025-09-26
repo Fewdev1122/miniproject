@@ -678,7 +678,7 @@ body {
 
 .popup-form {
     display: none;
-    z-index: 9999;
+    z-index: 999999;
     position: absolute;
     background-color: var(--white);
     padding: 1rem;
@@ -705,7 +705,7 @@ body {
     top: 0;
     left: 0;
     opacity: 50%;
-    z-index: 999;
+    z-index: 99998;
 }
 
 .input-add {
@@ -965,7 +965,8 @@ input[type="number"]::-webkit-outer-spin-button {
   background: #ffffff;
   padding: 20px;
   margin: 10% auto;
-  width: 400px;
+  width: 90%;
+  max-width: 400px;
   border-radius: 10px;
   text-align: center;
 }
@@ -1045,7 +1046,31 @@ input[type="number"]::-webkit-outer-spin-button {
 strong{
     color: var(--brown);
 }
+@media (max-width: 480px) {
+  .modal-content {
+    margin: 20% auto;
+    padding: 15px;
+  }
 
+  #addToCart {
+    font-size: 12px;
+    height: 40px;
+  }
+
+  .options button {
+    font-size: 13px;
+    padding-left: 0.25rem;
+  }
+
+  .quantity-box button {
+    width: 28px;
+    height: 28px;
+  }
+
+  #quantity {
+    margin: 0 0.5rem;
+  }
+}
 /* ==================== Modal ตะกร้า ==================== */
 #cartModal {
     display: none; /* เริ่มต้นซ่อน */
@@ -1055,19 +1080,38 @@ strong{
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
+    overflow-y: auto; /* scroll เฉพาะแนวตั้ง */
     background-color: rgba(0,0,0,0.5); /* พื้นหลังมืดโปร่งแสง */
-}
 
+    justify-content: center;
+    align-items: flex-start; /* ให้ลงมาเกือบกึ่งกลาง */
+    padding-top: 8%; 
+}
 #cartModal .modal-content {
     background-color: #fff;
-    margin: 5% auto;
-    padding: 20px;
     border-radius: 10px;
     width: 90%;
     max-width: 400px;
+    padding: 20px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     position: relative;
+    transition: transform 0.3s ease;
+}
+@media (max-width: 480px) {
+    #cartModal .modal-content {
+        width: 95%;
+        padding: 15px;
+        margin-top: 5%; /* เพิ่มระยะบนให้พอดีจอมือถือ */
+    }
+
+    .cart-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    #checkout {
+        width: 100%;
+    }
 }
 
 /* ปุ่มปิด modal */
@@ -1147,3 +1191,34 @@ strong{
     background-color: var(--brown-hover);
 }
 
+.sweetness-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+}
+
+.sweetness-options label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border: 1px solid #d0c4b5;
+    border-radius: 12px;
+    padding: 3px 8px;
+    font-size: 12px;
+    color: #7c5e48;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.sweetness-options input[type="radio"] {
+    display: none;
+}
+
+.sweetness-options label.active {
+    background-color: #7c5e48;
+    color: #fff;
+    border-color: #7c5e48;
+}

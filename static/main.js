@@ -1,3 +1,4 @@
+
 class HamburgerMenu {
   constructor(menuId, hamId) {
     this.menu = document.getElementById(menuId);
@@ -148,64 +149,64 @@ class PopupManager {
 }
 
 class MenuManager {
-    constructor(containerSelector) {
-        this.container = document.querySelector(containerSelector);
-        this.init();
+  constructor(containerSelector) {
+    this.container = document.querySelector(containerSelector);
+    this.init();
+  }
+
+  // ผูก event หลัก
+  init() {
+    document.addEventListener('click', (e) => this.handleDeleteClick(e));
+  }
+
+  // จัดการคลิกปุ่มลบ
+  handleDeleteClick(e) {
+    const btn = e.target.closest('.delAdmin');
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (confirm('ยืนยันลบเมนูนี้หรือไม่?')) {
+      this.deleteMenu(id, btn);
     }
+  }
 
-    // ผูก event หลัก
-    init() {
-        document.addEventListener('click', (e) => this.handleDeleteClick(e));
+  async deleteMenu(id, btn) {
+    try {
+      const res = await fetch(`/api/menus/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      const data = await res.json();
+
+      if (data.success) {
+        this.removeMenuFromDOM(btn);
+      } else {
+        alert('ลบไม่สำเร็จ');
+      }
+    } catch (err) {
+      alert('ลบไม่สำเร็จ: ' + err.message);
     }
+  }
 
-    // จัดการคลิกปุ่มลบ
-    handleDeleteClick(e) {
-        const btn = e.target.closest('.delAdmin');
-        if (!btn) return;
-
-        const id = btn.dataset.id;
-        if (confirm('ยืนยันลบเมนูนี้หรือไม่?')) {
-            this.deleteMenu(id, btn);
-        }
-    }
-
-    async deleteMenu(id, btn) {
-        try {
-            const res = await fetch(`/api/menus/${id}`, { method: 'DELETE' });
-            if (!res.ok) throw new Error('Delete failed');
-            const data = await res.json();
-
-            if (data.success) {
-                this.removeMenuFromDOM(btn);
-            } else {
-                alert('ลบไม่สำเร็จ');
-            }
-        } catch (err) {
-            alert('ลบไม่สำเร็จ: ' + err.message);
-        }
-    }
-
-    removeMenuFromDOM(btn) {
-        const box = btn.closest('.list-store-box');
-        if (box) box.remove();
-    }
+  removeMenuFromDOM(btn) {
+    const box = btn.closest('.list-store-box');
+    if (box) box.remove();
+  }
 }
 
 
 const buttons = document.querySelectorAll(".option-btn");
 
-  buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      // เอา active ออกจากทุกปุ่ม
-      buttons.forEach(b => b.classList.remove("active"));
-      // ใส่ active เฉพาะปุ่มที่คลิก
-      btn.classList.add("active");
-    });
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    // เอา active ออกจากทุกปุ่ม
+    buttons.forEach(b => b.classList.remove("active"));
+    // ใส่ active เฉพาะปุ่มที่คลิก
+    btn.classList.add("active");
   });
+});
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    new MenuManager('#menu-list'); 
+  new MenuManager('#menu-list');
 });
 
 
@@ -253,3 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .join("");
   }
 });
+
+
+
+

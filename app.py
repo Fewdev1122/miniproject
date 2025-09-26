@@ -1,9 +1,19 @@
 from flask import Flask,render_template,request,flash, redirect,session,jsonify
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash,generate_password_hash
+import json
 import sqlite3
 import os
+from pypromptpay import qr_code
+
+# ทดลองใช้
+payload = qr_code("0633796360", 100)
+print(payload)
+
+
 app = Flask(__name__)
+
+
 app.secret_key = 'your_secret'
 db_garden = 'garden.db'
 def get_db():
@@ -52,12 +62,12 @@ def index():
     is_logged_in = 'admin_id' in session  
     is_admin = session.get('is_admin', False)
     
-    return render_template('index.html',is_logged_in=is_logged_in, is_admin=is_admin)
+    return render_template('index.html',is_logged_in=is_logged_in, is_admin=is_admin,)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        email = request.form['email']   
         password = request.form['password']
         try:
             with get_db() as db:
@@ -109,15 +119,19 @@ def addMenu():
         option = request.form.getlist('option_type')
         cagatorie = request.form['cagatories-add']
         details = request.form.get('detail-menu-add', '').strip()
-        if not(details):
+        if not details:
             details = "ไม่มีรายละเอียด"
+
+        # ✅ เก็บความหวาน
+        sweetness = request.form.getlist('sweetness')  # จะได้เป็น list เช่น ["หวานมาก","หวานน้อย"]
+        sweetness_json = json.dumps(sweetness, ensure_ascii=False)  # เก็บเป็น JSON string
+
         option_price = {}
         image_path = ''
 
         for opt in option:
             val = request.form.get(f'option_type_{opt}', 0) or 0
-            option_price[opt] = int(val) 
-            print(f'Option {opt} add price: {option_price[opt]}')
+            option_price[opt] = int(val)
 
         img = request.files['menu_image']
         if img and img.filename != '':
@@ -128,9 +142,9 @@ def addMenu():
         try:
             with get_db() as db:
                 cursor = db.execute('''
-                    INSERT INTO list_menu (menu_name, menu_price, category, img_path, details)
-                    VALUES (?, ?, ?, ?, ?)
-                ''', (name, base_price, cagatorie, image_path, details))
+                    INSERT INTO list_menu (menu_name, menu_price, category, img_path, details, sweetness)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (name, base_price, cagatorie, image_path, details, sweetness_json))
                 id_menu = cursor.lastrowid
 
                 for opt_id, add_price in option_price.items():
@@ -148,6 +162,7 @@ def addMenu():
             flash('เกิดข้อผิดพลาด', 'error')
 
     return redirect('/')
+
 
 @app.route('/api/menus')
 def add_menus():
@@ -168,7 +183,8 @@ def add_menus():
             'menu_price':menu['menu_price'],
             'category':menu['category'],
             'img_path':menu['img_path'],
-            'details':menu['details']
+            'details':menu['details'],
+            'sweetness': json.loads(menu['sweetness'] or '[]')
         })
     for opt in option:
         option_list.append({
@@ -199,6 +215,18 @@ def delete_menu(id_menu):
     db.close()
     return jsonify({'success': True})
 
+@app.route("/create_qr", methods=["POST"])
+def create_qr():
+    data = request.get_json()
+    total_amount = data.get("total", 0)
+    # สมมุติใช้เบอร์ร้าน
+    phone_number = "0633796360"
+
+    payload = qr_code(phone_number, total_amount)  # ใช้จำนวนเงินจาก cart
+    return jsonify({"qr_payload": payload, "total": total_amount})
+
+
 if __name__ == '__main__':
+    
     init_db()
-    app.run(debug=True ,host='0.0.0.0', port=5500 ,threaded=False)
+    app.run(debug=True ,host='0.0.0.0', port=5000 ,threaded=False)
