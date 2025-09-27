@@ -121,50 +121,32 @@
     <script src="{{ url_for('static', filename='main.js') }}"></script>
     <script>
 
-        // ฟังก์ชันดึงตะกร้าจาก DOM
-        // ฟังก์ชันอัปเดต QR และยอดรวม
-        async function updateQR() {
-            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-
-            try {
-                const res = await fetch("/create_qr", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ cart: cart, total: total })
-                });
-
-                const data = await res.json();
-
-                // แสดง QR
-                const qrDiv = document.getElementById("qrCodeDiv");
-                qrDiv.innerHTML = "";
-                new QRCode(qrDiv, { text: data.qr_payload, width: 200, height: 200 });
-
-                // แสดงยอดรวม
-                document.getElementById("qrAmount").innerText = `ยอดรวม: ${data.total} บาท`;
-            } catch (err) {
-                console.error(err);
-                alert("เกิดข้อผิดพลาดในการสร้าง QR");
-            }
-        }
-
-        // กดปุ่มชำระเงิน -> เปิด QR modal
-        document.getElementById("checkout").onclick = () => {
+        document.getElementById("checkout").onclick = async () => {
             if (cart.length === 0) {
-                alert("ตะกร้าว่าง");
+                alert("ตะกร้าว่าง!");
                 return;
             }
-            updateQR();
+
+            const res = await fetch("/create_qr", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cart: cart })  // ส่ง cart จริง
+            });
+
+            const data = await res.json();
+
+            // ✅ ใช้ data.qr_payload ที่ Flask ส่งมา
+            document.getElementById("qrCodeDiv").innerHTML =
+                `<img src="data:image/png;base64,${data.qr_payload}" alt="PromptPay QR" />`;
+
+            document.getElementById("qrAmount").innerText = `ยอดรวม: ${data.total} บาท`;
             document.getElementById("qrModal").style.display = "block";
         };
 
-        // ปิด modal QR
+
         document.getElementById("closeQrBtn").onclick = () => {
             document.getElementById("qrModal").style.display = "none";
         };
-
-
-
 
 
 

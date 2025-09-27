@@ -1,0 +1,3 @@
+[console_scripts]
+promptpay = promptpay.__main__:main
+

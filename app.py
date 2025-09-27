@@ -1,14 +1,14 @@
-from flask import Flask,render_template,request,flash, redirect,session,jsonify
+from flask import Flask,render_template,request,flash, redirect,session,jsonify,send_file
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash,generate_password_hash
 import json
 import sqlite3
 import os
-from pypromptpay import qr_code
+from promptpay import qrcode as pp_qrcode  
+import qrcode 
+import io, base64
 
-# ทดลองใช้
-payload = qr_code("0633796360", 100)
-print(payload)
+
 
 
 app = Flask(__name__)
@@ -215,15 +215,33 @@ def delete_menu(id_menu):
     db.close()
     return jsonify({'success': True})
 
+PROMPTPAY_ACCOUNT = "0633796360"
+
 @app.route("/create_qr", methods=["POST"])
 def create_qr():
     data = request.get_json()
-    total_amount = data.get("total", 0)
-    # สมมุติใช้เบอร์ร้าน
-    phone_number = "0633796360"
+    cart = data.get("cart", [])
 
-    payload = qr_code(phone_number, total_amount)  # ใช้จำนวนเงินจาก cart
-    return jsonify({"qr_payload": payload, "total": total_amount})
+    # คำนวณยอดรวม
+    total = sum(float(item["price"]) * int(item.get("qty", 1)) for item in cart)
+
+    # ✅ generate payload จาก promptpay
+    payload = pp_qrcode.generate_payload(PROMPTPAY_ACCOUNT, amount=total)
+
+    # ✅ สร้าง QR code จาก payload
+    qr_img = qrcode.make(payload)
+
+    # ✅ แปลงเป็น base64 string
+    buffered = io.BytesIO()
+    qr_img.save(buffered, format="PNG")
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
+
+    return jsonify({
+        "qr_payload": img_str,   # base64 พร้อมใช้งาน
+        "total": f"{total:.2f}"
+    })
+
+
 
 
 if __name__ == '__main__':
