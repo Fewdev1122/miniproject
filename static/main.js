@@ -19,20 +19,7 @@ class HamburgerMenu {
 const ham = new HamburgerMenu('menu', 'ham-menu');
 
 
-document.addEventListener('DOMContentLoaded', () => {
-  const hamMenu = new HamburgerMenu('menu', 'bar-menu', 'ham-menu');
-  // ...existing code...
-});
 
-// ...existing code...
-
-// ======================= INIT =======================
-document.addEventListener('DOMContentLoaded', () => {
-  // Hamburger
-  const hamMenu = new HamburgerMenu('menu', 'bar-menu', 'ham-menu');
-
-  // ...existing code...
-});
 
 // 2. Category Filter
 class CategoryFilter {
@@ -70,13 +57,13 @@ class MenuSearch {
   }
 
   init() {
+    if (!this.searchInput) return;
     this.searchInput.addEventListener('input', () => this.search());
     this.searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        this.search();
-      }
+      if (e.key === 'Enter') this.search();
     });
   }
+
 
   search() {
     const menuName = document.querySelectorAll('.name-menu');
@@ -111,10 +98,11 @@ class PopupManager {
   }
 
   init() {
-    this.addMenu.addEventListener('click', () => this.openPopup());
-    this.del.addEventListener('click', () => this.closePopup());
-    this.input.addEventListener('change', () => this.previewImage());
+    if (this.addMenu) this.addMenu.addEventListener('click', () => this.openPopup());
+    if (this.del) this.del.addEventListener('click', () => this.closePopup());
+    if (this.input) this.input.addEventListener('change', () => this.previewImage());
   }
+
 
   openPopup() {
     this.popup.classList.add('add-active');
@@ -227,34 +215,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const popupManager = new PopupManager('add_menu', 'popup', 'del-popup', 'bgblack', 'file', 'icon-up', 'img-suc');
   popupManager.init();
 });
-
-document.addEventListener("DOMContentLoaded", () => {
-  const badge = document.getElementById("cart-badge");
-  const cartBtn = document.getElementById("cart-btn");
-  const popup = document.getElementById("cart-popup");
-
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  badge.textContent = cart.length;
-
-  cartBtn.addEventListener("click", (e) => {
-    e.preventDefault();
-    popup.classList.toggle("hidden");
-    renderCart();
-  });
-
-  function renderCart() {
-    const itemsBox = document.getElementById("cart-items");
-    if (!itemsBox) return;
-    if (cart.length === 0) {
-      itemsBox.innerHTML = "<p>ไม่มีสินค้าในตะกร้า</p>";
-      return;
-    }
-    itemsBox.innerHTML = cart
-      .map((item) => `<div>${item.name} x ${item.qty}</div>`)
-      .join("");
-  }
-});
-
-
-
 

@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="padding: 20px; box-sizing: border-box; max-width: 1200px; margin: 0 auto;">
+
+  <h1 class="order-title">รายละเอียดคำสั่งซื้อ #{{ order['id'] }}</h1>
+
+  <!-- ข้อมูลผู้สั่ง -->
+  <section class="order-info">
+    <h4 class="section-title">ข้อมูลผู้สั่ง</h4>
+    <div class="order-details" style="display: flex; flex-wrap: wrap; gap: 15px;">
+      <div class="detail-item" style="flex: 1 1 45%;">
+        <strong>ชื่อเล่น:</strong> {{ order['nickname'] }}
+      </div>
+      <div class="detail-item" style="flex: 1 1 45%;">
+        <strong>เบอร์โทร:</strong> {{ order['phone'] }}
+      </div>
+      <div class="detail-item" style="flex: 1 1 45%;">
+        <strong>สถานะ:</strong> {{ order['status'] }}
+      </div>
+      <div class="detail-item" style="flex: 1 1 45%;">
+        <strong>เวลาสั่งซื้อ:</strong> {{ order['timestamp'] }}
+      </div>
+      {% if order['slip_filename'] %}
+      <div class="detail-item" style="flex: 1 1 100%;">
+        <strong>สลิปโอนเงิน:</strong>
+        <img src="{{ url_for('static', filename='slips/' ~ order['slip_filename']) }}" alt="Slip"
+          style="max-width:300px; display:block; margin-top:5px;">
+      </div>
+      {% endif %}
+    </div>
+
+  </section>
+
+  <!-- รายการเมนู -->
+  <section class="order-items" style="margin-top: 20px;">
+    <h4 class="section-title">รายการเมนู</h4>
+    <div style="overflow-x: auto;">
+      <table class="menu-table" style="width:100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>ชื่อเมนู</th>
+            <th>จำนวน</th>
+            <th>ราคา</th>
+            <th>ความหวาน</th>
+            <th>option</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in cart %}
+          <tr class="menu-item">
+            <td>{{ item['name'] }}</td>
+            <td>x {{ item['qty'] }}</td>
+            <td>{{ item['price'] }} ฿</td>
+            <td>{{ item['sweetness'] if item['sweetness'] else 'ปกติ' }}</td>
+            <td>{{ item['optionName'] if item['optionName'] else 'เย็น' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+       <div style="text-align:left; font-weight: bold; margin-top: 10px;">
+        รวมทั้งหมด: {{ total_price }} ฿
+      </div>
+    </div>
+    
+  </section>
+
+  <!-- ปุ่มกลับ -->
+  <div style="display: flex; justify-content: center; ">
+    <a href="{{ url_for('manage_orders') }}"
+      style="padding: 10px 20px; background-color: #3498db; color: white; border-radius: 6px; text-decoration: none; font-weight: 600;">
+      กลับไปยังหน้าจัดการคำสั่งซื้อ
+    </a>
+  </div>
+
+</div>
+
+<!-- เพิ่ม CSS ให้ body เลื่อนได้แน่นอน -->
+<style>
+  html,
+  body {
+    height: auto !important;
+    overflow-y: auto !important;
+  }
+</style>
+
+{% endblock %}

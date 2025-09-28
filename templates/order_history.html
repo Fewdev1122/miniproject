@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="order-title">ประวัติคำสั่งซื้อ</h1>
+
+<div class="orders-container">
+  <div class="order-header">
+    <div class="order-column">คำสั่งซื้อ</div>
+    <div class="order-column">ชื่อเล่น</div>
+    <div class="order-column">สถานะ</div>
+    <div class="order-column">เวลาสั่งซื้อ</div>
+    <div class="order-column">ดูรายละเอียด</div>
+  </div>
+
+  {% for order in orders %}
+  <div class="order-detail-row">
+    <div class="order-column">
+      <a href="{{ url_for('order_details', order_id=order['id']) }}">#{{ order['id'] }}</a>
+    </div>
+    <div class="order-column">{{ order['nickname'] }}</div>
+    <div class="order-column">{{ order['status'] }}</div>
+    <div class="order-column">{{ order['timestamp'] }}</div>
+    <div class="order-column">
+      <a href="{{ url_for('order_details', order_id=order['id']) }}">ดูรายละเอียด</a>
+    </div>
+  </div>
+  {% else %}
+  <p>ยังไม่มีประวัติคำสั่งซื้อ</p>
+  {% endfor %}
+  
+{% endblock %}

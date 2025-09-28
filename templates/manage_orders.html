@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="order-title">จัดการคำสั่งซื้อ</h1>
+
+<!-- ปุ่มลิงก์ไปประวัติคำสั่งซื้อ -->
+
+
+ <div class="orders-header">
+  <a href="{{ url_for('order_history') }}" class="history-link">ประวัติคำสั่งซื้อ</a>
+</div>
+<div class="orders-container">
+  <div class="order-header">
+    <div class="order-column">คำสั่งซื้อ</div>
+    <div class="order-column">ชื่อเล่น</div>
+    <div class="order-column">สถานะ</div>
+    <div class="order-column">เวลาสั่งซื้อ</div>
+    <div class="order-column">การจัดการ</div>
+    
+  </div>
+ 
+
+  {% for order in orders %}
+  <div class="order-detail-row" id="order-{{ order['id'] }}">
+    <div class="order-column">
+      <a href="{{ url_for('order_details', order_id=order['id']) }}">#{{ order['id'] }}</a>
+    </div>
+    <div class="order-column">{{ order['nickname'] }}</div>
+    <div class="order-column">
+      <span id="status-{{ order['id'] }}">{{ order['status'] }}</span>
+    </div>
+    <div class="order-column">{{ order['timestamp'] }}</div>
+    <div class="order-column">
+      <button onclick="updateStatus({{ order['id'] }}, 'กำลังทำ')">กำลังทำ</button>
+      <button onclick="updateStatus({{ order['id'] }}, 'เสร็จแล้ว')">เสร็จแล้ว</button>
+      <button onclick="updateStatus({{ order['id'] }}, 'รับแล้ว')">รับแล้ว</button>
+    </div>
+    
+  </div>
+  
+  {% else %}
+  <p>ไม่มีคำสั่งซื้อในระบบ</p>
+  {% endfor %}
+  
+</div>
+
+
+<script src="{{ url_for('static', filename='order.js') }}"></script>
+{% endblock %}

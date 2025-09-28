@@ -1,4 +1,5 @@
-{% extends "layout.html" %} {% block content %}
+{% extends "layout.html" %}
+{% block content %}
 
 <section class="menu-search-box">
     <div class="menu-search-container">
@@ -20,7 +21,7 @@
                 <li class="cagatory" data-target="dessert">ของหวาน</li>
             </ul>
         </div>
-        {% if is_admin %}
+        {% if session.get("role") == "owner" %}
         <div class="bg-black" id="bgblack"></div>
         <div class="popup-form" id="popup">
             <form action="/add-menu" method="post" enctype="multipart/form-data" class="add" id="add_id">
@@ -58,8 +59,9 @@
                         <p>** แนะนำ สูง220px กว้าง480px **</p>
                     </div>
                 </label>
-                <input type="file" name="menu_image" style="margin-bottom: 1rem; display: none" id="file"
-                    accept="image/*" required />
+                <input type="file" name="menu_image" id="file" accept="image/*" required
+                    style="opacity:0; position:absolute; left:-9999px;">
+
                 <label for="text-menu">ชื่อเมนู</label>
                 <input type="text" id="text-menu" name="menu_name" placeholder="ชื่อเมนู" class="input-add" required />
                 <label for="number-price">ราคา</label>
@@ -115,8 +117,94 @@
                 </svg></span>
         </div>
     </div>
+    {% if session.get("role") == "owner" %}
+
+    <div class="popup-form" id="popup-edit">
+        <form action="/update-menu" method="post" enctype="multipart/form-data" class="edit" id="edit_id">
+            <input type="hidden" name="id_menu" id="edit_id_menu">
+            <input type="hidden" name="edit_options" id="edit_options">
+
+            <h3 style="font-size: 20px; color: #583e2c; margin-bottom: 1rem">แก้ไขเมนู</h3>
+
+            <label for="edit_file" class="add-file">
+                <div class="container-file">
+                    <div class="ic-upload">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" viewBox="0 0 24 24">
+                            <g fill="none" stroke="#808080" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2">
+                                <path stroke-dasharray="20" stroke-dashoffset="20"
+                                    d="M12 15h2v-6h2.5l-4.5 -4.5M12 15h-2v-6h-2.5l4.5 -4.5">
+                                    <animate attributeName="d" begin="0.5s" dur="1.5s" repeatCount="indefinite"
+                                        values="M12 15h2v-6h2.5l-4.5 -4.5M12 15h-2v-6h-2.5l4.5 -4.5;M12 15h2v-3h2.5l-4.5 -4.5M12 15h-2v-3h-2.5l4.5 -4.5;M12 15h2v-6h2.5l-4.5 -4.5M12 15h-2v-6h-2.5l4.5 -4.5" />
+                                    <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.4s" values="20;0" />
+                                </path>
+                                <path stroke-dasharray="14" stroke-dashoffset="14" d="M6 19h12">
+                                    <animate fill="freeze" attributeName="stroke-dashoffset" begin="0.5s" dur="0.2s"
+                                        values="14;0" />
+                                </path>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="ic-upload">เลือกรูปใหม่ (ถ้าต้องการ)</div>
+                </div>
+            </label>
+            <input type="file" name="menu_image" id="edit_file" accept="image/*"
+                style="opacity:0; position:absolute; left:-9999px;" />
+
+            <label>ชื่อเมนู</label>
+            <input type="text" name="menu_name" id="edit_name" class="input-add" required>
+
+            <label>ราคา</label>
+            <input type="number" name="menu_price" id="edit_price" class="input-add" required>
+
+            <label>รายละเอียด</label>
+            <textarea name="detail-menu-edit" id="edit_details" placeholder="รายละเอียด"
+                class="detail-menu-add"></textarea>
+
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="option_type" id="option_type_1" value="1" /> ร้อน
+                </label> +
+                <input type="number" id="option_type_1_price" name="option_type_1"
+                    style="width: 25px; padding-left: 0.25rem" />
+
+                <label>
+                    <input type="checkbox" name="option_type" id="option_type_2" value="2" /> เย็น
+                </label> +
+                <input type="number" id="option_type_2_price" name="option_type_2"
+                    style="width: 25px; padding-left: 0.25rem" />
+
+                <label>
+                    <input type="checkbox" name="option_type" id="option_type_3" value="3" /> ปั่น
+                </label> +
+                <input type="number" id="option_type_3_price" name="option_type_3"
+                    style="width: 25px; padding-left: 0.25rem" />
+            </div>
+
+
+
+            <div class="checkbox">
+                <label><input type="checkbox" name="sweetness" value="หวานมาก" /> หวานมาก</label>
+                <label><input type="checkbox" name="sweetness" value="หวานปกติ" /> หวานปกติ</label>
+                <label><input type="checkbox" name="sweetness" value="หวานน้อย" /> หวานน้อย</label>
+                <label><input type="checkbox" name="sweetness" value="ไม่หวาน" /> ไม่หวาน</label>
+            </div>
+
+            <button type="submit" id="cf-edit">ยืนยันการแก้ไข</button>
+            <button type="button" id="del-popup-edit">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 14 14">
+                    <path fill="#808080" fill-rule="evenodd"
+                        d="M1.707.293A1 1 0 0 0 .293 1.707L5.586 7L.293 12.293a1 1 0 1 0 1.414 1.414L7 8.414l5.293 5.293a1 1 0 0 0 1.414-1.414L8.414 7l5.293-5.293A1 1 0 0 0 12.293.293L7 5.586z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+
+        </form>
+    </div>
+    {% endif %}
+
+
 </section>
-<!-- โหลด library ก่อน -->
 
 
 <section class="list-store-menu">
@@ -155,12 +243,9 @@
 </section>
 
 
-
 <script>
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
     let allOptions = []; // เก็บ options ทั้งหมดจาก API
-    let cart = JSON.parse(localStorage.getItem("cart")) || []; // ตะกร้า
-
-    // ======== Fetch เมนู ========
     fetch("api/menus")
         .then((res) => res.json())
         .then((data) => {
@@ -208,6 +293,24 @@
                     <p class="detail-menu">${menu.details}</p>
                     <div class="option-add">
                         <ul class="option-menu">${listOptHTML}</ul>
+                        {% if session.get("role") == "owner" %}
+                        <button class="edit-menu"
+                            data-id="${menu.id_menu}"
+                            data-name="${menu.menu_name}"
+                            data-price="${menu.menu_price}"
+                            data-details="${menu.details}"
+                            data-sweetness='${JSON.stringify(menu.sweetness || [])}'
+                           data-options='${JSON.stringify(
+                        data.menu_option_prices.filter(
+                            (opt) => opt.id_menu == menu.id_menu
+                        )
+                    )}'>
+                            แก้ไข
+                        </button>
+
+                        {% else %}
+                       
+
                         <button class="add-menu" 
                             data-id="${menu.id_menu}" 
                             data-name="${menu.menu_name}"
@@ -223,6 +326,7 @@
                     )}'>
                             เพิ่ม
                         </button>
+                         {% endif %}
 
 
                     </div>
@@ -392,11 +496,17 @@
     });
 
 
+
+    // เมื่อโหลดหน้าใหม่หรือรีเฟรชให้ดึงข้อมูลจาก localStorage
+
+
     // ======== Modal ตะกร้า ========
     function updateCartUI() {
+        console.log("อัปเดตตะกร้า...");
         const cartList = document.getElementById("cart-list");
         const totalPriceEl = document.getElementById("total-price");
         const badge = document.getElementById("cart-badge");
+        console.log("ข้อมูลตะกร้า:", cart);  // เช็คข้อมูลในตะกร้า
 
         cartList.innerHTML = "";
 
@@ -417,9 +527,8 @@
         let totalQty = 0;
 
         cart.forEach((item, index) => {
-            const itemTotal = item.price * item.qty; // คำนวณทีละ item
+            const itemTotal = item.price * item.qty;
             total += itemTotal;
-
             totalQty += item.qty;
 
             const li = document.createElement("li");
@@ -429,22 +538,21 @@
             li.style.marginBottom = "8px";
 
             li.innerHTML = `
-        <div>
-            <div style="display:flex; align-items: flex-start;"><strong>${item.name}</strong></div>
-            <div style="font-size:0.9em;color:#555;">${item.optionName} | ${item.sweetness
-                } x ${item.qty}</div>
-        </div>
-        <div style="display:flex; flex-direction:row; align-items:center;">
-            $${itemTotal} ฿
- ฿
-            <button class="remove-item" data-index="${index}" style="margin-left:8px;"> <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="#E53E3E" d="M14.28 2a2 2 0 0 1 1.897 1.368L16.72 5H20a1 1 0 1 1 0 2l-.003.071l-.867 12.143A3 3 0 0 1 16.138 22H7.862a3 3 0 0 1-2.992-2.786L4.003 7.07L4 7a1 1 0 0 1 0-2h3.28l.543-1.632A2 2 0 0 1 9.721 2zm3.717 5H6.003l.862 12.071a1 1 0 0 0 .997.929h8.276a1 1 0 0 0 .997-.929zM10 10a1 1 0 0 1 .993.883L11 11v5a1 1 0 0 1-1.993.117L9 16v-5a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1m.28-6H9.72l-.333 1h5.226z"/></g></svg></button>
-        </div>
-    `;
+            <div>
+                <div style="display:flex; align-items: flex-start;"><strong>${item.name}</strong></div>
+                <div style="font-size:0.9em;color:#555;">${item.optionName} | ${item.sweetness} x ${item.qty}</div>
+            </div>
+            <div style="display:flex; flex-direction:row; align-items:center;">
+                ${itemTotal} ฿
+                <button class="remove-item" data-index="${index}" style="margin-left:8px;"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="#E53E3E" d="M14.28 2a2 2 0 0 1 1.897 1.368L16.72 5H20a1 1 0 1 1 0 2l-.003.071l-.867 12.143A3 3 0 0 1 16.138 22H7.862a3 3 0 0 1-2.992-2.786L4.003 7.07L4 7a1 1 0 0 1 0-2h3.28l.543-1.632A2 2 0 0 1 9.721 2zm3.717 5H6.003l.862 12.071a1 1 0 0 0 .997.929h8.276a1 1 0 0 0 .997-.929zM10 10a1 1 0 0 1 .993.883L11 11v5a1 1 0 0 1-1.993.117L9 16v-5a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1m.28-6H9.72l-.333 1h5.226z"/></g></svg>
+                </button>
+            </div>
+        `;
             cartList.appendChild(li);
         });
 
         totalPriceEl.innerText = total;
-
         badge.style.display = "inline-block";
         badge.innerText = totalQty;
 
@@ -459,30 +567,60 @@
 
         localStorage.setItem("cart", JSON.stringify(cart));
     }
+    document.addEventListener("DOMContentLoaded", () => {
+        fetch('/api/menus')
+            .then(res => res.json())
+            .then(data => {
+                const menuList = document.getElementById('menulist');
+                if (!menuList) {
+                    console.error('menulist ไม่เจอใน DOM');
+                    return;
+                }
 
-    // เปิด/ปิด modal ตะกร้า
-    document.querySelector(".basket .car-sell").onclick = (e) => {
-        e.preventDefault();
-        document.getElementById("cartModal").style.display = "block"; // เปิดเฉพาะตอนคลิก
-        updateCartUI();
-    };
+                data.menus.forEach(menu => {
+                    const box = document.createElement('div');
+                    box.classList.add('menu-item');
 
-    // ปิด modal ตะกร้า
-    document.querySelector("#cartModal .close").onclick = () => {
-        document.getElementById("cartModal").style.display = "none";
-    };
-    window.onclick = (e) => {
-        // ปิด modal เมนู
-        if (e.target.id === "menuModal") {
-            document.getElementById("menuModal").style.display = "none";
-        }
+                    const editBtn = document.createElement('button');
+                    editBtn.classList.add('edit-menu');
+                    editBtn.dataset.id = menu.id_menu;
+                    editBtn.dataset.name = menu.menu_name;
+                    editBtn.dataset.price = menu.menu_price;
+                    editBtn.dataset.details = menu.details;
+                    editBtn.dataset.sweetness = JSON.stringify(menu.sweetness);
 
-        // ปิด modal ตะกร้า
-        if (e.target.id === "cartModal") {
-            document.getElementById("cartModal").style.display = "none";
-        }
-    };
+                    const optionTypes = data.menu_option_prices
+                        .filter(opt => opt.id_menu == menu.id_menu)
+                        .map(opt => opt.id_option);
+                    editBtn.dataset.optionTypes = JSON.stringify(optionTypes);
 
+                    editBtn.textContent = data.is_admin ? 'แก้ไข' : 'เพิ่ม';
+
+                    box.appendChild(editBtn);
+                    menuList.appendChild(box);
+                });
+            });
+    });
+    // ฟังก์ชันอัปเดต hidden input
+    function updateEditOptions() {
+        const modal = document.getElementById("popup-edit");
+        const updatedOptions = [];
+        modal.querySelectorAll('input[name="option_type"]').forEach(cb => {
+            if (cb.checked) {
+                const priceInput = modal.querySelector(`#${cb.id}_price`);
+                updatedOptions.push({
+                    id_option: parseInt(cb.value),
+                    price_add: parseFloat(priceInput.value) || 0
+                });
+            }
+        });
+        document.getElementById('edit_options').value = JSON.stringify(updatedOptions);
+    }
+
+    // เพิ่ม event listener ให้ checkbox + number input
+    document.querySelectorAll('#popup-edit input[name^="option_type"]').forEach(el => {
+        el.addEventListener('change', updateEditOptions);
+    });
 
 
 </script>

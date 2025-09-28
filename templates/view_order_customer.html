@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<h1 class="order-title">รายละเอียดคำสั่งซื้อ #{{ order['id'] }}</h1>
+
+<!-- ข้อมูลคำสั่งซื้อ -->
+<section class="order-info">
+  <h4 class="section-title">ข้อมูลคำสั่งซื้อ</h4>
+  <div class="order-details">
+    <div class="detail-item">
+      <strong>ชื่อเล่น:</strong> {{ order['nickname'] }}
+    </div>
+    <div class="detail-item">
+      <strong>สถานะ:</strong> {{ order['status'] }}
+    </div>
+    <div class="detail-item">
+      <strong>เวลาสั่งซื้อ:</strong> {{ order['timestamp'] }}
+    </div>
+  </div>
+</section>
+
+<!-- รายการเมนู -->
+<section class="order-items">
+  <h4 class="section-title">รายการเมนู</h4>
+
+  <!-- ตารางรายการเมนู -->
+  <table class="menu-table">
+    <thead>
+      <tr>
+        <th>ชื่อเมนู</th>
+        <th>จำนวน</th>
+        <th>ราคา</th>
+        <th>ความหวาน</th>  <!-- เพิ่มคอลัมน์ความหวาน -->
+        <th>ตัวเลือกเพิ่มเติม</th>  <!-- เพิ่มคอลัมน์ตัวเลือกอื่นๆ -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in cart %}
+      <tr class="menu-item">
+        <td class="menu-name">{{ item['name'] }}</td>
+        <td class="menu-qty">x {{ item['qty'] }}</td>
+        <td class="menu-price">{{ item['price'] }} ฿</td>
+        <td class="menu-sweetness">{{ item['sweetness'] if item['sweetness'] else 'ปกติ' }}</td> <!-- แสดงความหวาน -->
+        <td class="menu-options">{{ item['optionName'] if item['optionName'] else 'เย็น' }}</td>  <!-- แสดงตัวเลือก -->
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  <p><a href="{{ url_for('track_orders') }}">กลับไปยังรายการคำสั่งซื้อทั้งหมด</a></p>
+</footer>
+{% endblock %}
+

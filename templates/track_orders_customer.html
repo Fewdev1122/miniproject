@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+<h1 class="order-title">รายการคำสั่งซื้อ</h1>
+<p class="order-title" style="font-size: 18px; margin: 0.5rem 0;">
+  เหลืออยู่อีก: {{ orders|length }} คิว
+</p>
+
+<div class="orders-container">
+  <div class="order-header">
+    <div class="order-column">คำสั่งซื้อ</div>
+    <div class="order-column">ชื่อเล่น</div>
+    <div class="order-column">สถานะ</div>
+    <div class="order-column">เวลาสั่งซื้อ</div>
+  </div>
+
+  {% for order in orders %}
+  <div class="order-detail-row" id="order-{{ order['id'] }}">
+    <div class="order-column order-id">
+      <a href="{{ url_for('view_order', order_id=order['id']) }}"> #{{ order['id'] }} </a>
+    </div>
+    <div class="order-column order-nickname">
+      {{ order['nickname'] }}
+    </div>
+    <div class="order-column order-status">
+      <span class="status-text {{ order['status']|lower }}">
+        {{ order['status'] }}
+      </span>
+    </div>
+    <div class="order-column order-timestamp">
+      {{ order['timestamp'] }}
+    </div>
+  </div>
+  {% else %}
+  <p>ไม่มีคำสั่งซื้อในระบบ</p>
+  {% endfor %}
+</div>
+
+<style>
+  .status-text { font-weight: bold; padding: 2px 6px; border-radius: 6px; }
+  .status-text.รอดำเนินการ { background: orange; color: white; }
+  .status-text.กำลังทำ { background: dodgerblue; color: white; }
+  .status-text.เสร็จแล้ว { background: seagreen; color: white; }
+</style>
+
+{% endblock %}

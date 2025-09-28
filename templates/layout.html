@@ -31,25 +31,27 @@
                 <div class="head-menu">
                     <ul class="list-menu" id="menu">
                         <li><a href="/">หน้าหลัก</a></li>
-                        {% if session.get("is_admin") %}
-                        <li> <button id="add_menu">เพิ่มเมนู</button></li>
-                        <li><a href="#">คำสั่งซื้อ</a></li>
+                        {% if session.get("role") == "owner" %}
+                        <li><a id="add_menu">เพิ่มเมนู</a></li>
+                        <li><a href="{{ url_for('manage_orders') }}">คำสั่งซื้อ</a></li>
                         <li><a href="#">แดชบอร์ด</a></li>
                         <li>
                             <a href="{{ url_for('logout') }}"
                                 onclick="return confirm('คุณแน่ใจหรือไม่ที่จะออกจากระบบ?');"
                                 style="background-color: rgb(224, 67, 67);">Log out</a>
                         </li>
+
                         {% else %}
-                        <li><a href="#">ติดตามออเดอร์</a></li>
+                        <li><a href="{{ url_for('track_orders') }}">ติดตามออเดอร์</a></li>
+
                         <li><a href="{{ url_for('login') }}" id="self-store">สำหรับเจ้าของร้าน</a></li>
                         {% endif %}
 
                     </ul>
-                    {% if session.get("is_admin") %}
+                    {% if session.get("role") == "owner" %}
                     {% else %}
                     <div class="basket">
-                        <a href="" class="car-sell"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                        <a href="#" class="car-sell"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 viewBox="0 0 24 24">
                                 <path fill="#7C5E48"
                                     d="M17 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2M1 2h3.27l.94 2H20a1 1 0 0 1 1 1c0 .17-.05.34-.12.5l-3.58 6.47c-.34.61-1 1.03-1.75 1.03H8.1l-.9 1.63l-.03.12a.25.25 0 0 0 .25.25H19v2H7a2 2 0 0 1-2-2c0-.35.09-.68.24-.96l1.36-2.45L3 4H1zm6 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2m9-7l2.78-5H6.14l2.36 5z" />
@@ -59,7 +61,6 @@
                     {% endif %}
 
                 </div>
-
                 <div id="cartModal" class="modal" style="z-index: 99999;">
                     <div class="modal-content">
                         <div>
@@ -80,8 +81,8 @@
                             </div>
 
                         </div>
-                        <button id="checkout"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                                viewBox="0 0 24 24">
+                        <button id="checkout"><svg type="button" xmlns="http://www.w3.org/2000/svg" width="18"
+                                height="18" viewBox="0 0 24 24">
                                 <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2">
                                     <path
@@ -89,21 +90,45 @@
                                     <circle cx="12" cy="12" r="2" />
                                 </g>
                             </svg>ชำระเงิน</button>
+                    </div>
 
-                        <div id="qrModal" class="modal" style="display:none;">
-                            <div class="modal-content">
-                                <span id="closeQrBtn">&times;</span>
-                                <h3>สแกนเพื่อชำระเงิน</h3>
-                                <div id="qrCodeDiv"></div>
-                                <p id="qrAmount"></p>
-                            </div>
+                </div>
+                <!-- QR modal -->
+                <!-- QR Payment Modal -->
+                <div id="qrModal" class="modal">
+                    <div class="modal-content">
+                        <span id="closeQrBtn" class="close-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" viewBox="0 0 40 40">
+                                <path fill="#333"
+                                    d="M21.499 19.994L32.755 8.727a1.064 1.064 0 0 0-.001-1.502c-.398-.396-1.099-.398-1.501.002L20 18.494L8.743 7.224c-.4-.395-1.101-.393-1.499.002a1.05 1.05 0 0 0-.309.751c0 .284.11.55.309.747L18.5 19.993L7.245 31.263a1.064 1.064 0 0 0 .003 1.503c.193.191.466.301.748.301h.006c.283-.001.556-.112.745-.305L20 21.495l11.257 11.27c.199.198.465.308.747.308a1.06 1.06 0 0 0 1.061-1.061c0-.283-.11-.55-.31-.747z" />
+                            </svg></span>
+                        <h3>สแกนเพื่อชำระเงิน</h3>
+                        <div id="qrCodeDiv" class="qr-display">กำลังสร้าง QR...</div>
+                        <p id="qrAmount" class="qr-amount"></p>
+
+                        <!-- ฟอร์มข้อมูลผู้ชำระ -->
+                        <!-- ฟอร์มข้อมูลผู้ชำระเงิน -->
+                        <div class="payment-form">
+                            <label for="nickname">ชื่อเล่น:</label>
+                            <input type="text" id="nickname" placeholder="ชื่อเล่นของคุณ">
+
+                            <label for="phone">เบอร์โทร:</label>
+                            <input type="tel" id="phone" placeholder="08xxxxxxxx">
+
+                            <label for="note">หมายเหตุ:</label>
+                            <textarea id="note"></textarea>
+
+                            <label for="slip">อัปโหลดสลิปโอนเงิน:</label>
+                            <input type="file" id="slip" accept="image/*">
+
+                            <button id="confirmPayment" class="confirm-btn">ยืนยันการชำระเงิน</button>
                         </div>
-
-
-
 
                     </div>
                 </div>
+
+
+
                 <div class="ham-menu" id="ham-menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 16 16">
                         <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round"
@@ -113,46 +138,346 @@
             </div>
         </div>
     </header>
+
     {% block content %}{% endblock %}
 
 
 
-    <script src="{{ url_for('static', filename='register.js') }}"></script>
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
-    <script>
 
-        document.getElementById("checkout").onclick = async () => {
-            if (cart.length === 0) {
-                alert("ตะกร้าว่าง!");
-                return;
-            }
+</body>
+<script src="{{ url_for('static', filename='register.js') }}"></script>
+<script src="{{ url_for('static', filename='main.js') }}"></script>
 
-            const res = await fetch("/create_qr", {
+<script>
+    document.getElementById("closeQrBtn").addEventListener("click", () => {
+        document.getElementById("qrModal").style.display = "none";
+
+        // ลบ QR และ cart จาก localStorage
+        localStorage.removeItem("qr_payload");
+        localStorage.removeItem("qr_total");
+        localStorage.removeItem("qr_cart");
+    });
+
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const basket = document.querySelector(".basket .car-sell");
+        console.log(basket); // ตรวจสอบว่าเลือก element ได้หรือไม่
+        if (basket) {
+            basket.addEventListener("click", (e) => {
+                e.preventDefault();
+                console.log("คลิกที่ตะกร้า"); // ดูใน console ว่าคลิกหรือไม่
+                const cartModal = document.getElementById("cartModal");
+                if (cartModal) {
+                    console.log("เปิด Modal ตะกร้า");
+                    cartModal.style.display = "block"; // เปิด modal
+                }
+            });
+        } else {
+            console.log("ไม่พบปุ่มตะกร้าในหน้า track-orders");
+        }
+    });
+
+    document.querySelector("#cartModal .close").onclick = () => {
+        console.log("ปิด modal ตะกร้า");
+        document.getElementById("cartModal").style.display = "none"; // ปิด modal
+    };
+
+
+    window.onclick = (e) => {
+        if (e.target.id === "cartModal") {
+            document.getElementById("cartModal").style.display = "none"; // ปิด modal เมื่อคลิกนอก modal
+        }
+    };
+    window.addEventListener("load", () => {
+        const qrPayload = localStorage.getItem("qr_payload");
+        const qrTotal = localStorage.getItem("qr_total");
+        const savedCart = localStorage.getItem("qr_cart");
+
+        if (qrPayload && qrTotal && savedCart) {
+            // ข้อมูล QR ยังคงอยู่ใน localStorage 
+            // จะทำการแสดง QR
+            document.getElementById("qrModal").style.display = "flex";
+            document.getElementById("qrCodeDiv").innerHTML = `<img src="data:image/png;base64,${qrPayload}" />`;
+            document.getElementById("qrAmount").innerText = `ยอดรวม: ${qrTotal} บาท`;
+            cart = JSON.parse(savedCart); // คืนค่าตะกร้า
+        } else {
+            // ถ้าไม่มีข้อมูล QR ให้ปิด Modal
+            document.getElementById("qrModal").style.display = "none";
+        }
+    });
+
+
+    window.onclick = (e) => {
+        if (e.target.id === "cartModal") {
+            document.getElementById("cartModal").style.display = "none"; // ปิด modal เมื่อคลิกนอก modal
+        }
+    };
+    window.addEventListener("load", () => {
+        const savedCart = localStorage.getItem("cart");
+
+        if (savedCart) {
+            cart = JSON.parse(savedCart); // ใช้ cart ที่ประกาศใน global scope
+            updateCartUI();
+            updateCartBadge(); // อัปเดตจำนวนในไอคอน
+        }
+    });
+    document.getElementById("confirmPayment").addEventListener("click", async () => {
+        const nickname = document.getElementById("nickname").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const note = document.getElementById("note").value.trim();
+        const slipFile = document.getElementById("slip").files[0];
+
+        if (!nickname || !phone) {
+            alert("กรุณากรอกชื่อเล่นและเบอร์โทร");
+            return;
+        }
+
+        if (!slipFile) {
+            alert("กรุณาอัปโหลดสลิปโอนเงิน");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("nickname", nickname);
+        formData.append("phone", phone);
+        formData.append("note", note);
+        formData.append("slip", slipFile);
+        formData.append("cart", JSON.stringify(cart));
+
+        try {
+            const res = await fetch("/confirm_payment", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ cart: cart })  // ส่ง cart จริง
+                body: formData
             });
 
             const data = await res.json();
+            if (data.success) {
+                alert("ชำระเงินสำเร็จ! ขอบคุณครับ");
 
-            // ✅ ใช้ data.qr_payload ที่ Flask ส่งมา
-            document.getElementById("qrCodeDiv").innerHTML =
-                `<img src="data:image/png;base64,${data.qr_payload}" alt="PromptPay QR" />`;
+                // ปิด Modal QR
+                document.getElementById("qrModal").style.display = "none";
 
-            document.getElementById("qrAmount").innerText = `ยอดรวม: ${data.total} บาท`;
-            document.getElementById("qrModal").style.display = "block";
-        };
+                // ลบข้อมูล QR จาก localStorage
+                localStorage.removeItem("qr_payload");
+                localStorage.removeItem("qr_total");
+                localStorage.removeItem("qr_cart");
+
+                // ลบข้อมูลตะกร้าจาก localStorage
+                localStorage.removeItem("cart"); // เพิ่มบรรทัดนี้เพื่อลบข้อมูลตะกร้า
+
+                // รีเซ็ตตะกร้า
+                cart = [];  // ลบข้อมูลตะกร้า
+                document.getElementById("cart-badge").innerText = "0"; // อัปเดต UI ตะกร้า
+                if (typeof updateCartList === "function") updateCartList(); // อัปเดตการแสดงผลของตะกร้า
+
+                // เมื่อชำระเงินเสร็จต้องรีเฟรชหน้าใหม่เพื่อให้ข้อมูลถูกลบ
+                window.location.reload(); // รีเฟรชหน้าใหม่
+            } else {
+                alert("เกิดข้อผิดพลาด: " + data.message);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("เกิดข้อผิดพลาดในการติดต่อเซิร์ฟเวอร์");
+        }
+        updateCartUI()
+    });
+
+    function updateCartBadge() {
+        const totalQty = cart.reduce((total, item) => total + item.qty, 0);
+        console.log("จำนวนสินค้าทั้งหมดในตะกร้า:", totalQty);
+
+        const badge = document.getElementById("cart-badge");
+        if (totalQty > 0) {
+            badge.style.display = "inline-block"; // แสดงจำนวนสินค้า
+            badge.innerText = totalQty;
+        } else {
+            badge.style.display = "none"; // ซ่อนถ้าตะกร้าว่าง
+        }
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+        const checkoutBtn = document.getElementById("checkout");
+
+        if (checkoutBtn) {
+            checkoutBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+
+                if (!cart || cart.length === 0) {
+                    alert("ตะกร้าว่าง!");
+                    return;
+                }
+
+                const cartModal = document.getElementById("cartModal");
+                const qrModal = document.getElementById("qrModal");
+                const qrDiv = document.getElementById("qrCodeDiv");
+                const qrAmount = document.getElementById("qrAmount");
+
+                cartModal.style.display = "none";
+                qrModal.style.display = "flex";
+                qrDiv.innerText = "กำลังสร้าง QR...";
+                qrAmount.innerText = "";
+
+                try {
+                    const res = await fetch("/create_qr", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cart: cart })
+                    });
+
+                    const data = await res.json();
+
+                    qrDiv.innerHTML = `<img src="data:image/png;base64,${data.qr_payload}" />`;
+                    qrAmount.innerText = `ยอดรวม: ${data.total} บาท`;
+
+                    localStorage.setItem("qr_payload", data.qr_payload);
+                    localStorage.setItem("qr_total", data.total);
+                    localStorage.setItem("qr_cart", JSON.stringify(cart));
+                } catch (err) {
+                    console.error(err);
+                    qrDiv.innerText = "เกิดข้อผิดพลาด!";
+                }
+            });
+        }
+    });
+    function updateCartUI() {
+        console.log("อัปเดตตะกร้า...");
+        const cartList = document.getElementById("cart-list");
+        const totalPriceEl = document.getElementById("total-price");
+        const badge = document.getElementById("cart-badge");
+        console.log("ข้อมูลตะกร้า:", cart);  // เช็คข้อมูลในตะกร้า
+
+        cartList.innerHTML = "";
+
+        if (cart.length === 0) {
+            const li = document.createElement("li");
+            li.style.textAlign = "center";
+            li.style.color = "#555";
+            li.innerText = "ตะกร้าว่าง";
+            cartList.appendChild(li);
+            totalPriceEl.innerText = 0;
+
+            badge.style.display = "none";
+            badge.innerText = 0;
+            return;
+        }
+
+        let total = 0;
+        let totalQty = 0;
+
+        cart.forEach((item, index) => {
+            const itemTotal = item.price * item.qty;
+            total += itemTotal;
+            totalQty += item.qty;
+
+            const li = document.createElement("li");
+            li.style.display = "flex";
+            li.style.justifyContent = "space-between";
+            li.style.alignItems = "center";
+            li.style.marginBottom = "8px";
+
+            li.innerHTML = `
+            <div>
+                <div style="display:flex; align-items: flex-start;"><strong>${item.name}</strong></div>
+                <div style="font-size:0.9em;color:#555;">${item.optionName} | ${item.sweetness} x ${item.qty}</div>
+            </div>
+            <div style="display:flex; flex-direction:row; align-items:center;">
+                ${itemTotal} ฿
+                <button class="remove-item" data-index="${index}" style="margin-left:8px;"> 
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"><g fill="none"><path d="m12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035q-.016-.005-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093q.019.005.029-.008l.004-.014l-.034-.614q-.005-.018-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="#E53E3E" d="M14.28 2a2 2 0 0 1 1.897 1.368L16.72 5H20a1 1 0 1 1 0 2l-.003.071l-.867 12.143A3 3 0 0 1 16.138 22H7.862a3 3 0 0 1-2.992-2.786L4.003 7.07L4 7a1 1 0 0 1 0-2h3.28l.543-1.632A2 2 0 0 1 9.721 2zm3.717 5H6.003l.862 12.071a1 1 0 0 0 .997.929h8.276a1 1 0 0 0 .997-.929zM10 10a1 1 0 0 1 .993.883L11 11v5a1 1 0 0 1-1.993.117L9 16v-5a1 1 0 0 1 1-1m4 0a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0v-5a1 1 0 0 1 1-1m.28-6H9.72l-.333 1h5.226z"/></g></svg>
+                </button>
+            </div>
+        `;
+            cartList.appendChild(li);
+        });
+
+        totalPriceEl.innerText = total;
+        badge.style.display = "inline-block";
+        badge.innerText = totalQty;
+
+        cartList.querySelectorAll(".remove-item").forEach((btn) => {
+            btn.onclick = () => {
+                const i = parseInt(btn.dataset.index);
+                cart.splice(i, 1);
+                localStorage.setItem("cart", JSON.stringify(cart));
+                updateCartUI();
+            };
+        });
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
+    // เลือกปุ่มแก้ไข
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.edit-menu');
+    if (!btn) return;
+
+    const menuId = parseInt(btn.dataset.id);
+    const menuName = btn.dataset.name;
+    const menuPrice = btn.dataset.price;
+    const menuDetails = btn.dataset.details;
+    const menuSweetness = JSON.parse(btn.dataset.sweetness || "[]");
+    const menuOptions = JSON.parse(btn.dataset.options || "[]");
+
+    // แสดง popup + background
+    const modal = document.getElementById("popup-edit");
+    const bgBlack = document.getElementById("bgblack");
+
+    if (modal) modal.style.display = "block";
+    if (bgBlack) bgBlack.style.display = "block";
+
+    document.getElementById("edit_id_menu").value = menuId;
+    document.getElementById("edit_name").value = menuName;
+    document.getElementById("edit_price").value = menuPrice;
+    document.getElementById("edit_details").value = menuDetails;
+
+    // Sweetness
+    modal.querySelectorAll('input[name="sweetness"]').forEach(cb => {
+        cb.checked = menuSweetness.includes(cb.value);
+    });
+
+    // Option types
+    const optionCheckboxes = modal.querySelectorAll('input[name="option_type"]');
+    optionCheckboxes.forEach(cb => cb.checked = false); // reset
+    menuOptions.forEach(opt => {
+        const cb = modal.querySelector(`#option_type_${opt.id_option}`);
+        const priceInput = modal.querySelector(`#option_type_${opt.id_option}_price`);
+        if (cb) {
+            cb.checked = true;
+            if (priceInput) priceInput.value = opt.price_add || 0;
+        }
+    });
+
+    document.getElementById('edit_options').value = JSON.stringify(menuOptions);
+});
+
+// ปิด popup + bgblack
+document.getElementById("del-popup-edit").addEventListener("click", () => {
+    const modal = document.getElementById("popup-edit");
+    const bgBlack = document.getElementById("bgblack");
+    if (modal) modal.style.display = "none";
+    if (bgBlack) bgBlack.style.display = "none";
+});
+
+// อัปเดต hidden input ทุกครั้งที่เปลี่ยน option หรือราคา
+document.querySelectorAll('input[name="option_type"], input[id$="_price"]').forEach(el => {
+    el.addEventListener('change', () => {
+        const modal = document.getElementById("popup-edit");
+        const updatedOptions = [];
+        modal.querySelectorAll('input[name="option_type"]').forEach(cb => {
+            if (cb.checked) {
+                const priceInput = modal.querySelector(`#${cb.id}_price`);
+                updatedOptions.push({
+                    id_option: parseInt(cb.value),
+                    price_add: parseFloat(priceInput.value) || 0
+                });
+            }
+        });
+        document.getElementById('edit_options').value = JSON.stringify(updatedOptions);
+    });
+});
 
 
-        document.getElementById("closeQrBtn").onclick = () => {
-            document.getElementById("qrModal").style.display = "none";
-        };
 
 
-
-
-    </script>
-</body>
-
+</script>
 
 </html>
