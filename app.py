@@ -473,22 +473,25 @@ def get_order_data(category=None, date_filter=None, start_date=None, end_date=No
     conn = sqlite3.connect("garden.db")
     cursor = conn.cursor()
 
-    query = """
-        SELECT m.category, SUM(oi.qty) as total_sales
+    # เลือกว่าจะ group ตาม category หรือ menu_name
+    if category:
+        select_field = "m.menu_name"
+        where_clause = "TRIM(m.category) = ?"
+        params = [category.strip()]
+    else:
+        select_field = "m.category"
+        where_clause = "1=1"
+        params = []
+
+    query = f"""
+        SELECT {select_field}, SUM(oi.qty) as total_sales
         FROM order_items oi
         JOIN list_menu m ON oi.id_menu = m.id_menu
         JOIN orders o ON oi.order_id = o.id
-        WHERE 1=1
+        WHERE {where_clause}
     """
-    params = []
 
     today = date.today()
-
-    # Filter by category
-    if category:
-        query += " AND TRIM(m.category) = ?"
-        params.append(category.strip())
-
     # Filter by date
     if date_filter == "today":
         query += " AND DATE(o.timestamp) = ?"
@@ -503,7 +506,7 @@ def get_order_data(category=None, date_filter=None, start_date=None, end_date=No
         query += " AND DATE(o.timestamp) BETWEEN ? AND ?"
         params.extend([start_date, end_date])
 
-    query += " GROUP BY m.category"
+    query += f" GROUP BY {select_field}"
 
     cursor.execute(query, params)
     data = cursor.fetchall()
@@ -512,26 +515,40 @@ def get_order_data(category=None, date_filter=None, start_date=None, end_date=No
 
 
 
+
 @app.route("/dashboard")
 def dashboard():
-    category = request.args.get("category", "")  # หมวดหมู่
-    date_filter = request.args.get("date_filter", "today")
+    # รับค่าฟิลเตอร์
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
+    category = request.args.get("category", "")
+    date_filter = request.args.get("date_filter", "today")
+    top_n = int(request.args.get("top_n", 5))  # Top N
 
-    data = get_order_data(category, date_filter, start_date, end_date)
-    labels = [row[0] for row in data]
-    values = [row[1] for row in data]
+    # ดึงข้อมูลยอดขายหมวดหมู่
+    category_data = get_order_data(category, date_filter, start_date, end_date)
 
-    return render_template(
-        "dashboard.html",
-        labels=labels,
-        values=values,
-        selected_category=category,
-        selected_date_filter=date_filter,
-        start_date=start_date,
-        end_date=end_date
-    )
+    # Sort และ Top N
+    category_data = sorted(category_data, key=lambda x: x[1], reverse=True)[:top_n]
+
+    category_labels = [row[0] for row in category_data]
+    category_values = [row[1] for row in category_data]
+
+    # คำนวณรายได้รวม
+    total_revenue = sum(row[2] for row in category_data) if category_data and len(category_data[0])>2 else None
+
+    return render_template("dashboard.html",
+                           category_labels=category_labels,
+                           category_values=category_values,
+                           total_revenue=total_revenue,
+                           selected_category=category,
+                           selected_date_filter=date_filter,
+                           start_date=start_date,
+                           end_date=end_date,
+                           top_n=top_n)
+
+
+
 
 
 @app.route('/cancel_order/<int:order_id>', methods=['POST'])
@@ -584,6 +601,48 @@ def api_orders():
         })
 
     return jsonify({"orders": orders_list})
+def get_daily_sales(start_date=None, end_date=None):
+    conn = sqlite3.connect("garden.db")
+    cursor = conn.cursor()
+
+    query = """
+        SELECT DATE(o.timestamp) as day, SUM(oi.qty) as total_sales
+        FROM order_items oi
+        JOIN orders o ON oi.order_id = o.id
+        WHERE 1=1
+    """
+    params = []
+
+    if start_date and end_date:
+        query += " AND DATE(o.timestamp) BETWEEN ? AND ?"
+        params.extend([start_date, end_date])
+
+    query += " GROUP BY day ORDER BY day"
+
+    cursor.execute(query, params)
+    data = cursor.fetchall()
+    conn.close()
+    return data
+@app.route('/api/orders_data')
+def api_orders_data():
+    category = request.args.get("category", "")
+    date_filter = request.args.get("date_filter", "today")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+    top_n = int(request.args.get("top_n", 0))
+
+    data = get_order_data(category=category, date_filter=date_filter, start_date=start_date, end_date=end_date)
+
+    # sort ตามยอดขาย
+    data.sort(key=lambda x: x[1], reverse=True)
+
+    if top_n > 0:
+        data = data[:top_n]
+
+    labels = [row[0] for row in data]
+    values = [row[1] for row in data]
+
+    return jsonify({"labels": labels, "values": values})
 
 if __name__ == '__main__':
     
