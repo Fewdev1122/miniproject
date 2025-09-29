@@ -216,3 +216,28 @@ document.addEventListener('DOMContentLoaded', () => {
   popupManager.init();
 });
 
+  document.addEventListener('DOMContentLoaded', () => {
+    const modals = document.getElementsByClassName("popup-form-edit"); // HTMLCollection ของ popup
+    const bgBlack = document.getElementById("bgblack"); // overlay
+    const delBtns = document.querySelectorAll("#del-popup-edit"); // ปุ่มปิด popup
+
+    // ฟังก์ชันปิด popup
+    function closePopup(modal) {
+        modal.style.display = "none";
+        if (bgBlack) bgBlack.style.display = "none";
+    }
+
+    // ผูก event ให้ปุ่มปิด
+    delBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            Array.from(modals).forEach(modal => closePopup(modal));
+        });
+    });
+
+    // คลิก overlay ก็ปิด popup
+    if (bgBlack) {
+        bgBlack.addEventListener("click", () => {
+            Array.from(modals).forEach(modal => closePopup(modal));
+        });
+    }
+});

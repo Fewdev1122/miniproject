@@ -528,6 +528,7 @@ body {
     transition: all 0.5s;
     background-color: var(--brown-hover);
 }
+
 .add-menu {
     width: 75px;
     height: 40px;
@@ -711,10 +712,27 @@ body {
 
 }
 
+.popup-form-edit {
+    display: none;
+    z-index: 999999;
+    position: absolute;
+    background-color: var(--white);
+    padding: 1.5rem;
+    width: 350px;
+    border-radius: 8px;
+    right: 50%;
+    left: 50%;
+    top: 40%;
+    transform: translate(-50%, -50%);
+    margin-top: 1rem;
+
+}
+
 .add {
     display: flex;
     flex-direction: column;
 }
+
 .edit {
     display: flex;
     flex-direction: column;
@@ -775,7 +793,8 @@ input[type="number"]::-webkit-outer-spin-button {
 #add-list-menu:hover {
     background-color: var(--brown-hover);
 }
-#cf-edit{
+
+#cf-edit {
     border: none;
     background-color: var(--brown);
     color: var(--white);
@@ -798,6 +817,7 @@ input[type="number"]::-webkit-outer-spin-button {
     font-size: 18px;
     cursor: pointer;
 }
+
 #del-popup-edit {
     border: none;
     background: none;
@@ -807,6 +827,7 @@ input[type="number"]::-webkit-outer-spin-button {
     font-size: 18px;
     cursor: pointer;
 }
+
 .checkbox input[type="number"] {
     margin-right: 1rem;
     margin-bottom: 0.75rem;
@@ -1305,17 +1326,17 @@ strong {
 .payment-form label {
     display: block;
     text-align: left;
-    margin:  0 4px;
+    margin: 0 4px;
     font-weight: 500;
 }
 
 .payment-form input,
 .payment-form textarea {
     width: 100%;
-    padding: 8px 10px;
+    padding: 5px 10px;
     border-radius: 6px;
     border: 1px solid #ccc;
-    margin-bottom: 10px;
+    margin-bottom: 2px;
     font-size: 14px;
 }
 
@@ -1505,8 +1526,7 @@ strong {
     font-size: 2rem;
     color: #2c3e50;
     text-align: center;
-    margin-top: 40px;
-    margin-bottom: 30px;
+    margin-top: 10px;
     font-weight: 600;
 }
 
@@ -1626,22 +1646,12 @@ footer a:hover {
 
 
 
-/* สำหรับส่วนหัวของหน้า */
-.order-title {
-    font-size: 2rem;
-    color: #2c3e50;
-    /* สีเทาเข้ม */
-    text-align: center;
-    margin-top: 30px;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
 
 /* สำหรับคอนเทนเนอร์ของคำสั่งซื้อทั้งหมด */
 .orders-container {
     margin: 0 auto;
-    width: 90%;
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1400px;
     border-radius: 10px;
     border: 1px solid #e1e1e1;
     /* สีเทาอ่อน */
@@ -1700,8 +1710,19 @@ footer a:hover {
     gap: 6px;
     /* ระยะห่างระหว่างปุ่ม */
     flex-wrap: nowrap;
+    flex: 1 1 23%;
+    min-width: 120px;
     /* บังคับไม่ให้ตัดบรรทัด */
 }
+@media (max-width: 1024px) {
+    .order-column {
+        flex: 1 1 45%; /* 2 คอลัมน์ต่อแถว */
+    }
+    .order-header {
+        flex-wrap: wrap;
+    }
+}
+
 
 /* เลขคำสั่งซื้อ */
 .order-id {
@@ -1806,11 +1827,13 @@ footer a:hover {
 
     .order-header,
     .order-detail-row {
-        flex-direction: row;
-        /* จัดแสดงเป็นแถวเดียว */
+        display: flex;
+        flex-wrap: wrap;
+        /* ให้บรรทัดยืดหยุ่น */
+        justify-content: space-between;
         align-items: center;
-        /* จัดตำแหน่งให้กลาง */
     }
+
 
     .order-column {
         padding: 10px;
@@ -1898,9 +1921,11 @@ footer a:hover {
 
 .orders-header {
     display: flex;
-    justify-content: flex-end;   /* ดันไปขวา */
+    justify-content: flex-end;
+    /* ดันไปขวา */
     margin-bottom: 10px;
-    max-width: 1000px;           /* เท่าตาราง */
+    max-width: 1000px;
+    /* เท่าตาราง */
     margin-left: auto;
     margin-right: auto;
 }
@@ -1908,9 +1933,12 @@ footer a:hover {
 .history-link {
     display: inline-block;
     padding: 6px 14px;
-    border: 1px solid #7C5E48;   /* ขอบบาง */
-    border-radius: 6px;           /* มนเล็กน้อย */
-    background-color: #fff;       /* พื้นขาวสบายตา */
+    border: 1px solid #7C5E48;
+    /* ขอบบาง */
+    border-radius: 6px;
+    /* มนเล็กน้อย */
+    background-color: #fff;
+    /* พื้นขาวสบายตา */
     color: #7C5E48;
     font-weight: 500;
     font-size: 0.95rem;
@@ -1919,7 +1947,66 @@ footer a:hover {
 }
 
 .history-link:hover {
-    background-color: #7C5E48;   /* เปลี่ยนสีเมื่อชี้ */
+    background-color: #7C5E48;
+    /* เปลี่ยนสีเมื่อชี้ */
     color: #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    font-family: Arial, sans-serif;
+}
+
+.filter-form label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.filter-form select,
+.filter-form input[type="number"],
+.filter-form input[type="date"] {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+.view-slip-btn {
+    background: transparent;
+    /* ไม่มีพื้นหลัง */
+    color: #7C5E48;
+
+
+    /* เส้นขอบน้ำตาล */
+  
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    border-bottom: #512e12;
+}
+
+/* hover */
+
+/* active กดปุ่ม */
+.view-slip-btn:active {
+    transform: scale(0.95);
+}
+
+/* รองรับมือถือ (ปุ่มใหญ่ขึ้น) */
+@media (max-width: 600px) {
+    .view-slip-btn {
+        width: 100%;
+        font-size: 14px;
+        padding: 0 5px;
+        height: 30px;
+    }
 }

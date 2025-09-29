@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
+<audio id="orderSound" src="{{ url_for('static', filename='sounds/notification.mp3') }}" preload="auto"></audio>
 <h1 class="order-title">จัดการคำสั่งซื้อ</h1>
 
 <!-- ปุ่มลิงก์ไปประวัติคำสั่งซื้อ -->
@@ -15,6 +16,8 @@
     <div class="order-column">สถานะ</div>
     <div class="order-column">เวลาสั่งซื้อ</div>
     <div class="order-column">การจัดการ</div>
+    <div class="order-column">ยกเลิกออเดอร์</div>
+
     
   </div>
  
@@ -33,6 +36,12 @@
       <button onclick="updateStatus({{ order['id'] }}, 'กำลังทำ')">กำลังทำ</button>
       <button onclick="updateStatus({{ order['id'] }}, 'เสร็จแล้ว')">เสร็จแล้ว</button>
       <button onclick="updateStatus({{ order['id'] }}, 'รับแล้ว')">รับแล้ว</button>
+      
+    </div>
+    <div class="order-column">
+      {% if order['status'] == 'รอดำเนินการ' %}
+      <button onclick="cancelOrder({{ order['id'] }}, '{{ order.get('cancel_token', '') }}')">ยกเลิก</button>
+      {% endif %}
     </div>
     
   </div>
@@ -45,4 +54,27 @@
 
 
 <script src="{{ url_for('static', filename='order.js') }}"></script>
+<script>
+async function cancelOrder(orderId, token) {
+    if (!confirm("คุณแน่ใจว่าจะยกเลิกออร์เดอร์นี้หรือไม่?")) return;
+
+    const formData = new FormData();
+    formData.append("token", token);
+
+    const res = await fetch(`/cancel_order/${orderId}`, {
+        method: "POST",
+        body: formData
+    });
+
+    if(res.ok){
+        alert("ยกเลิกคำสั่งซื้อเรียบร้อย");
+        // ซ่อนแถวแทน reload เพื่อ UX ดีขึ้น
+        document.getElementById(`order-${orderId}`).remove();
+    } else {
+        const text = await res.text();
+        alert("เกิดข้อผิดพลาด: " + text);
+    }
+}
+
+</script>
 {% endblock %}

@@ -67,6 +67,14 @@ def index():
     is_logged_in = 'admin_id' in session  
     is_admin = session.get('is_admin', False)
 
+    # ตัวอย่าง ตั้งค่า role
+    if 'role' not in session:
+        session['role'] = 'customer'  # หรือ 'owner'
+
+    # ตัวอย่าง store status
+    if 'store_open' not in session:
+        session['store_open'] = True  # ร้านเปิดโดย default
+
     db = get_db()
     menus = db.execute('SELECT * FROM list_menu').fetchall()
     menus_list = []
@@ -82,15 +90,17 @@ def index():
             'option_types': json.loads(menu['option_types'] or '[]')
         })
 
-
     db.close()
 
     return render_template(
         'index.html',
         menus=menus_list,
         is_logged_in=is_logged_in,
-        is_admin=is_admin
+        is_admin=is_admin,
+        role=session.get('role'),         # ส่ง role เข้า template
+        store_open=session.get('store_open')  # ส่ง store_open เข้า template
     )
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -344,10 +354,13 @@ def manage_orders():
 
     with get_db() as db:
         # ดึงทุกคำสั่งซื้อที่ยังไม่ถึง "รับแล้ว"
-        orders = db.execute(
-            "SELECT id, nickname, timestamp, status FROM orders WHERE status != ? ORDER BY timestamp ASC",
+        rows = db.execute(
+            "SELECT id, nickname, timestamp, status, cancel_token FROM orders WHERE status != ? ORDER BY timestamp ASC",
             ("รับแล้ว",)
         ).fetchall()
+
+        # แปลง Row เป็น dict
+        orders = [dict(row) for row in rows]
 
     return render_template('manage_orders.html', orders=orders)
 
@@ -468,30 +481,26 @@ def update_menu():
     db.close()
     return redirect("/")
 
-
 def get_order_data(category=None, date_filter=None, start_date=None, end_date=None):
     conn = sqlite3.connect("garden.db")
     cursor = conn.cursor()
 
-    # เลือกว่าจะ group ตาม category หรือ menu_name
-    if category:
-        select_field = "m.menu_name"
-        where_clause = "TRIM(m.category) = ?"
-        params = [category.strip()]
-    else:
-        select_field = "m.category"
-        where_clause = "1=1"
-        params = []
-
-    query = f"""
-        SELECT {select_field}, SUM(oi.qty) as total_sales
+    query = """
+        SELECT m.menu_name, SUM(oi.qty) as total_qty, SUM(oi.qty * m.menu_price) as total_price
         FROM order_items oi
         JOIN list_menu m ON oi.id_menu = m.id_menu
         JOIN orders o ON oi.order_id = o.id
-        WHERE {where_clause}
+        WHERE 1=1
     """
+    params = []
 
     today = date.today()
+
+    # Filter by category
+    if category:
+        query += " AND TRIM(m.category) = ?"
+        params.append(category.strip())
+
     # Filter by date
     if date_filter == "today":
         query += " AND DATE(o.timestamp) = ?"
@@ -506,7 +515,7 @@ def get_order_data(category=None, date_filter=None, start_date=None, end_date=No
         query += " AND DATE(o.timestamp) BETWEEN ? AND ?"
         params.extend([start_date, end_date])
 
-    query += f" GROUP BY {select_field}"
+    query += " GROUP BY m.menu_name"
 
     cursor.execute(query, params)
     data = cursor.fetchall()
@@ -515,27 +524,25 @@ def get_order_data(category=None, date_filter=None, start_date=None, end_date=No
 
 
 
-
 @app.route("/dashboard")
 def dashboard():
-    # รับค่าฟิลเตอร์
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
     category = request.args.get("category", "")
     date_filter = request.args.get("date_filter", "today")
     top_n = int(request.args.get("top_n", 5))  # Top N
 
-    # ดึงข้อมูลยอดขายหมวดหมู่
+    # ดึงข้อมูลทั้งหมดตามหมวด/วันที่
     category_data = get_order_data(category, date_filter, start_date, end_date)
 
-    # Sort และ Top N
-    category_data = sorted(category_data, key=lambda x: x[1], reverse=True)[:top_n]
+    # ยอดรวมทั้งหมด (ตามหมวดที่เลือก)
+    total_revenue = sum(row[2] for row in category_data) if category_data else 0
 
-    category_labels = [row[0] for row in category_data]
-    category_values = [row[1] for row in category_data]
+    # Sort Top N ตาม total_price สำหรับกราฟ
+    top_data = sorted(category_data, key=lambda x: x[2], reverse=True)[:top_n]
 
-    # คำนวณรายได้รวม
-    total_revenue = sum(row[2] for row in category_data) if category_data and len(category_data[0])>2 else None
+    category_labels = [row[0] for row in top_data]
+    category_values = [row[2] for row in top_data]  # ยอดเงิน
 
     return render_template("dashboard.html",
                            category_labels=category_labels,
@@ -548,30 +555,29 @@ def dashboard():
                            top_n=top_n)
 
 
-
-
-
 @app.route('/cancel_order/<int:order_id>', methods=['POST'])
 def cancel_order(order_id):
-    token = request.form.get('token')
-
+    role = session.get('role')
     with get_db() as db:
         order = db.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
         if not order:
             return "ไม่พบออร์เดอร์", 404
 
-        # ตรวจสอบว่า token ตรงและเป็นเจ้าของ
-        if 'user_id' not in session or session['user_id'] != order['user_id']:
-            return "ไม่สามารถยกเลิกออร์เดอร์นี้ได้", 403
+        # สำหรับลูกค้า ตรวจสอบ cancel_token
+        if role != 'owner':
+            token = request.form.get('token')
+            if not token or token != order['cancel_token']:
+                return "ไม่ได้รับอนุญาตให้ยกเลิกออร์เดอร์นี้", 403
 
-        # ตรวจสอบสถานะ
-        if order['status'] != 'รอดำเนินการ':
-            return "ไม่สามารถยกเลิกออร์เดอร์นี้ได้", 400
-
-        db.execute("UPDATE orders SET status = 'ยกเลิกแล้ว' WHERE id = ?", (order_id,))
+        # ลบออร์เดอร์และรายการเมนู
+        db.execute("DELETE FROM order_items WHERE order_id = ?", (order_id,))
+        db.execute("DELETE FROM orders WHERE id = ?", (order_id,))
         db.commit()
 
-    return f"ออร์เดอร์ #{order_id} ถูกยกเลิกเรียบร้อยแล้ว ✅"
+    return f"ออร์เดอร์ #{order_id} ถูกยกเลิกเรียบร้อยแล้ว"
+
+
+
 
 @app.route('/api/orders', methods=['GET'])
 def api_orders():
@@ -623,26 +629,60 @@ def get_daily_sales(start_date=None, end_date=None):
     data = cursor.fetchall()
     conn.close()
     return data
-@app.route('/api/orders_data')
+@app.route("/api/orders_data")
 def api_orders_data():
     category = request.args.get("category", "")
     date_filter = request.args.get("date_filter", "today")
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
-    top_n = int(request.args.get("top_n", 0))
+    top_n = int(request.args.get("top_n", 5))
 
-    data = get_order_data(category=category, date_filter=date_filter, start_date=start_date, end_date=end_date)
+    # ดึงข้อมูล (โครงสร้าง row สมมติว่า = (ชื่อเมนู, จำนวนขาย, ยอดขายรวม))
+    data = get_order_data(category, date_filter, start_date, end_date)
 
-    # sort ตามยอดขาย
-    data.sort(key=lambda x: x[1], reverse=True)
+    # รวมยอดทั้งหมด
+    total_revenue = sum(row[2] for row in data) if data else 0
+    total_quantity = sum(row[1] for row in data) if data else 0
 
-    if top_n > 0:
-        data = data[:top_n]
+    # เลือก top ตามยอดขายรวม
+    top_data = sorted(data, key=lambda x: x[2], reverse=True)[:top_n]
 
-    labels = [row[0] for row in data]
-    values = [row[1] for row in data]
+    labels = [row[0] for row in top_data]       # ชื่อเมนู
+    quantities = [row[1] for row in top_data]   # จำนวนขาย
+    values = [row[2] for row in top_data]       # ยอดขายรวม
 
-    return jsonify({"labels": labels, "values": values})
+    return jsonify({
+        "labels": labels,
+        "quantities": quantities,
+        "values": values,
+        "total_revenue": total_revenue,
+        "total_quantity": total_quantity
+    })
+
+
+@app.route("/api/check_new_orders")
+def api_check_new_orders():
+    with get_db() as db:
+        count = db.execute(
+            "SELECT COUNT(*) FROM orders WHERE status = ?",
+            ("รอดำเนินการ",)
+        ).fetchone()[0]
+    return jsonify({"new_orders": count})
+
+@app.route('/toggle_store', methods=['POST'])
+def toggle_store():
+    if session.get('role') != 'owner':
+        return jsonify({'error': 'ไม่ได้รับอนุญาต'}), 403
+
+    # สลับสถานะร้าน
+    session['store_open'] = not session.get('store_open', True)
+    return jsonify({'store_open': session['store_open']})
+
+# API สำหรับลูกค้าเช็คสถานะร้าน
+@app.route('/api/store_status')
+def store_status():
+    return jsonify({'store_open': session.get('store_open', True)})
+
 
 if __name__ == '__main__':
     

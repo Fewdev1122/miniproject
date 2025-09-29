@@ -1,8 +1,11 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>แดชบอร์ดยอดขาย</h1>
 
-<form style="text-align:center; margin-bottom:20px;">
+
+
+
+<form style="text-align:center; margin-bottom:20px; display: flex; align-items: center;">
+
     <label>หมวดหมู่:</label>
     <select name="category" id="categorySelect">
         <option value="">ทั้งหมด</option>
@@ -25,91 +28,225 @@
 
     <label>Top N:</label>
     <input type="number" id="topN" value="5" min="1" max="20" style="width:60px;">
-</form>
-
-{% if total_revenue %}
-<p style="text-align:center; font-weight:bold;">รายได้รวม: {{ total_revenue }} บาท</p>
-{% endif %}
-
-<div style="text-align:center; margin-bottom:10px;">
     <label>ประเภทกราฟ:</label>
     <select id="chartType">
+
         <option value="bar">Bar (แท่ง)</option>
         <option value="line">Line (เส้น)</option>
         <option value="scatter">Scatter (จุด)</option>
         <option value="pie">Pie (วงกลม)</option>
     </select>
 
-    <div id="salesChart" style="width:80%;height:500px;margin:auto;"></div>
 
-    <script src="https://cdn.plot.ly/plotly-2.29.0.min.js"></script>
-    <script>
-        const pastelColors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#D7BAFF', '#FFC9DE'];
+</form>
 
-        function updateChart() {
-            const category = document.getElementById('categorySelect').value;
-            const date_filter = document.getElementById('dateFilterSelect').value;
-            const start_date = document.getElementById('startDate').value;
-            const end_date = document.getElementById('endDate').value;
-            const topN = document.getElementById('topN').value;
-            const chartType = document.getElementById('chartType').value; // <-- ประเภทกราฟ
 
-            fetch(`/api/orders_data?category=${category}&date_filter=${date_filter}&start_date=${start_date}&end_date=${end_date}&top_n=${topN}`)
-                .then(res => res.json())
-                .then(data => {
-                    let labels = data.labels;
-                    let values = data.values;
 
-                    if (topN) {
-                        labels = labels.slice(0, topN);
-                        values = values.slice(0, topN);
-                    }
 
-                    if (labels.length > 0) {
-                        const chartData = [{
-                            x: labels,
-                            y: (chartType !== 'pie') ? values : undefined,
-                            values: (chartType === 'pie') ? values : undefined,
-                            labels: (chartType === 'pie') ? labels : undefined,
-                            type: chartType,
+<div style="text-align: center; margin-bottom: 10px; ">
+    <p id="totalRevenue">ยอดรวมของหมวด {{ selected_category or "ทั้งหมด" }}: {{ total_revenue|round(2) }} บาท</p>
+</div>
+
+
+
+
+<div id="salesChart" style="width:80%;height:500px;margin:auto;"></div>
+
+<script src="https://cdn.plot.ly/plotly-2.29.0.min.js"></script>
+<script>
+    const pastelColors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#D7BAFF', '#FFC9DE'];
+
+    function updateChart() {
+        const category = document.getElementById('categorySelect').value;
+        const date_filter = document.getElementById('dateFilterSelect').value;
+        const start_date = document.getElementById('startDate').value;
+        const end_date = document.getElementById('endDate').value;
+        const topN = document.getElementById('topN').value;
+        const chartType = document.getElementById('chartType').value;
+
+        fetch(`/api/orders_data?category=${category}&date_filter=${date_filter}&start_date=${start_date}&end_date=${end_date}&top_n=${topN}`)
+            .then(res => res.json())
+            .then(data => {
+                let labels = data.labels;
+                let values = data.values;       // ยอดขาย (บาท)
+                let quantities = data.quantities; // จำนวนขาย (ชิ้น/แก้ว)
+
+                // อัปเดตยอดรวม
+                document.getElementById("totalRevenue").innerText =
+                    `ยอดรวมของหมวด ${category || "ทั้งหมด"}: ${data.total_revenue.toFixed(2)} บาท (${data.total_quantity} ชิ้น)`;
+
+                if (labels.length > 0) {
+                    let chartData;
+
+                    if (chartType === 'pie') {
+                        // Pie chart: แสดงยอดขาย
+                        chartData = [{
+                            values: values,
+                            labels: labels,
+                            type: 'pie',
                             marker: { color: pastelColors.slice(0, labels.length) },
-                            hovertemplate: 'เมนู: %{x}<br>ยอดขาย: %{y}<extra></extra>'
+                            hovertemplate: 'เมนู: %{label}<br>ยอดขาย: %{value} บาท<extra></extra>'
                         }];
-
-                        const layout = {
-                            title: 'ยอดขายตามหมวดหมู่',
-                            xaxis: { title: 'เมนู' },
-                            yaxis: { title: 'จำนวนขาย' },
-                            margin: { t: 50, l: 50, r: 50, b: 100 },
-                            hovermode: 'closest'
-                        };
-
-                        Plotly.newPlot('salesChart', chartData, layout, { responsive: true });
                     } else {
-                        document.getElementById("salesChart").innerHTML = "<p style='text-align:center;'>ไม่มีข้อมูลสำหรับช่วงเวลานี้</p>";
+                        // กราฟแท่ง/เส้น/จุด → ทำเป็น group
+                        chartData = [
+                            {
+                                x: labels,
+                                y: quantities,
+                                name: 'จำนวนขาย (ชิ้น)',
+                                type: chartType,
+                                marker: { color: '#7C5E48' },
+                                hovertemplate: 'เมนู: %{x}<br>จำนวนขาย: %{y} ชิ้น<extra></extra>'
+                            },
+                            {
+                                x: labels,
+                                y: values,
+                                name: 'ยอดขาย (บาท)',
+                                type: chartType,
+                                yaxis: 'y2',
+                                marker: { color: '#BAE1FF' },
+                                hovertemplate: 'เมนู: %{x}<br>ยอดขาย: %{y} บาท<extra></extra>'
+                            }
+                        ];
                     }
-                });
+
+                    const layout = {
+                        title: 'ยอดขายตามหมวดหมู่',
+                        xaxis: { title: 'เมนู', automargin: true },
+                        yaxis: {
+                            title: 'จำนวนขาย (ชิ้น)',
+                            tickformat: 'd',
+                            automargin: true
+                        },
+                        yaxis2: {
+                            title: 'ยอดขาย (บาท)',
+                            overlaying: 'y',
+                            side: 'right',
+                            automargin: true
+                        },
+                        margin: { t: 50, l: 40, r: 40, b: 100 }, // ลดซ้ายขวา
+                        hovermode: 'closest',
+                        paper_bgcolor: '#fff',
+                        plot_bgcolor: '#fff',
+                        autosize: true
+                    };
+
+
+
+                    Plotly.newPlot('salesChart', chartData, layout, { responsive: true });
+                } else {
+                    document.getElementById("salesChart").innerHTML =
+                        "<p style='text-align:center;'>ไม่มีข้อมูลสำหรับช่วงเวลานี้</p>";
+                }
+            });
+    }
+
+
+
+    // ฟัง event เปลี่ยนกราฟ
+    document.getElementById('chartType').addEventListener('change', updateChart);
+
+
+    // แสดง/ซ่อนวันที่ถ้าเลือก custom
+    document.getElementById('dateFilterSelect').addEventListener('change', function () {
+        const isCustom = this.value === 'custom';
+        document.getElementById('startDate').style.display = isCustom ? 'inline' : 'none';
+        document.getElementById('endDate').style.display = isCustom ? 'inline' : 'none';
+        updateChart();
+    });
+
+    // ฟัง event ทุกตัวเลือก
+    ['categorySelect', 'startDate', 'endDate', 'topN'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateChart);
+    });
+
+    // เรียกอัปเดตครั้งแรก
+    updateChart();
+
+</script>
+<style>
+    /* Reset บางอย่าง */
+    body {
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    /* หัวข้อ */
+    h1 {
+        text-align: center;
+        color: #5C4033;
+
+    }
+
+    /* Form ตัวเลือก */
+    form {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+        font-weight: bold;
+    }
+
+    form select,
+    form input[type="number"],
+    form input[type="date"] {
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        min-width: 120px;
+    }
+
+    /* Div ตัวเลือกประเภทกราฟและยอดรวม */
+    #chartOptions,
+    #totalRevenue {
+        text-align: center;
+
+    }
+
+    #totalRevenue p {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #5C4033;
+    }
+
+    /* กราฟ */
+    #salesChart {
+        width: 95%;
+        max-width: 1300px;
+        height: 550px;
+        margin: auto;
+        background-color: #fff;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Responsive สำหรับมือถือ */
+    @media (max-width: 600px) {
+        form {
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
         }
 
-        // ฟัง event เปลี่ยนกราฟ
-        document.getElementById('chartType').addEventListener('change', updateChart);
+        form select,
+        form input[type="number"],
+        form input[type="date"] {
+            min-width: 90%;
+        }
 
+        #salesChart {
+            height: 350px;
+        }
+    }
+</style>
 
-        // แสดง/ซ่อนวันที่ถ้าเลือก custom
-        document.getElementById('dateFilterSelect').addEventListener('change', function () {
-            const isCustom = this.value === 'custom';
-            document.getElementById('startDate').style.display = isCustom ? 'inline' : 'none';
-            document.getElementById('endDate').style.display = isCustom ? 'inline' : 'none';
-            updateChart();
-        });
-
-        // ฟัง event ทุกตัวเลือก
-        ['categorySelect', 'startDate', 'endDate', 'topN'].forEach(id => {
-            document.getElementById(id).addEventListener('change', updateChart);
-        });
-
-        // เรียกอัปเดตครั้งแรก
-        updateChart();
-
-    </script>
-    {% endblock %}
+{% endblock %}
