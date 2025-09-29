@@ -14,6 +14,7 @@
         rel="stylesheet" />
     <!-- QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.34.0.min.js"></script>
 
 
 </head>
@@ -34,7 +35,7 @@
                         {% if session.get("role") == "owner" %}
                         <li><a id="add_menu">เพิ่มเมนู</a></li>
                         <li><a href="{{ url_for('manage_orders') }}">คำสั่งซื้อ</a></li>
-                        <li><a href="#">แดชบอร์ด</a></li>
+                        <li><a href="{{ url_for('dashboard') }}">แดชบอร์ด</a></li>
                         <li>
                             <a href="{{ url_for('logout') }}"
                                 onclick="return confirm('คุณแน่ใจหรือไม่ที่จะออกจากระบบ?');"
@@ -254,6 +255,8 @@
             const data = await res.json();
             if (data.success) {
                 alert("ชำระเงินสำเร็จ! ขอบคุณครับ");
+                localStorage.setItem("cancel_token", data.cancel_token);
+
 
                 // ปิด Modal QR
                 document.getElementById("qrModal").style.display = "none";
@@ -450,12 +453,7 @@ document.addEventListener('click', (e) => {
 });
 
 // ปิด popup + bgblack
-document.getElementById("del-popup-edit").addEventListener("click", () => {
-    const modal = document.getElementById("popup-edit");
-    const bgBlack = document.getElementById("bgblack");
-    if (modal) modal.style.display = "none";
-    if (bgBlack) bgBlack.style.display = "none";
-});
+
 
 // อัปเดต hidden input ทุกครั้งที่เปลี่ยน option หรือราคา
 document.querySelectorAll('input[name="option_type"], input[id$="_price"]').forEach(el => {

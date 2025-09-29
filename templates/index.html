@@ -621,6 +621,12 @@
     document.querySelectorAll('#popup-edit input[name^="option_type"]').forEach(el => {
         el.addEventListener('change', updateEditOptions);
     });
+    document.getElementById("del-popup-edit").addEventListener("click", () => {
+        const modal = document.getElementById("popup-edit");
+        const bgBlack = document.getElementById("bgblack");
+        if (modal) modal.style.display = "none";
+        if (bgBlack) bgBlack.style.display = "none";
+    });
 
 
 </script>

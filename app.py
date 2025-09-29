@@ -7,8 +7,9 @@ import os
 from promptpay import qrcode as pp_qrcode  
 import qrcode 
 import io, base64
-from datetime import datetime
+from datetime import datetime, date
 from collections import defaultdict
+import uuid
 
 
 
@@ -41,7 +42,6 @@ def init_db():
                 category TEXT,
                 img_path TEXT,
                 details TEXT,
-                option_types TEXT DEFAULT '[]',
                 sweetness TEXT DEFAULT '[]' 
             );
         """)
@@ -292,15 +292,16 @@ def confirm_payment():
         slip_filename = filename
 
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cancel_token = str(uuid.uuid4())  # สร้าง cancel_token ใหม่
 
     try:
         with get_db() as db:
             db.execute("""
-                INSERT INTO orders (nickname, phone, note, cart_data, status, timestamp, slip_filename)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (nickname, phone, note, cart, "รอดำเนินการ", timestamp, slip_filename))
+                INSERT INTO orders (nickname, phone, note, cart_data, status, timestamp, slip_filename,cancel_token)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (nickname, phone, note, cart, "รอดำเนินการ", timestamp, slip_filename ,cancel_token))
 
-        return jsonify({'success': True, 'message': 'บันทึกออเดอร์เรียบร้อย'})
+        return jsonify({'success': True, 'message': 'บันทึกออเดอร์เรียบร้อย', 'cancel_token': cancel_token})
     except Exception as e:
         print("Error:", e)
         return jsonify({'success': False, 'message': str(e)})
@@ -310,7 +311,7 @@ def track_orders():
     with get_db() as db:
         # ลูกค้าเห็นเฉพาะออเดอร์ที่ยังไม่ "รับแล้ว"
         orders = db.execute("""
-            SELECT id, nickname, timestamp, status 
+            SELECT id, nickname, timestamp, status ,cancel_token
             FROM orders 
             WHERE status != 'รับแล้ว'
             ORDER BY timestamp ASC
@@ -357,14 +358,37 @@ def update_order_status(order_id):
     if session.get("role") != "owner":
         return jsonify({"success": False, "error": "Unauthorized"}), 403
 
-    data = request.get_json()
-    new_status = data.get("status")
+    try:
+        data = request.get_json()
+        new_status = data.get("status")
+        if not new_status:
+            return jsonify({"success": False, "error": "Missing status"}), 400
 
-    with get_db() as db:
-        db.execute("UPDATE orders SET status = ? WHERE id = ?", (new_status, order_id))
-        db.commit()
+        with get_db() as db:
+            # อัปเดตสถานะ
+            db.execute("UPDATE orders SET status = ? WHERE id = ?", (new_status, order_id))
 
-    return jsonify({"success": True})
+            # ถ้าเปลี่ยนเป็น "รับแล้ว" → บันทึก order_items
+            if new_status == "รับแล้ว":
+                order = db.execute("SELECT cart_data FROM orders WHERE id = ?", (order_id,)).fetchone()
+                cart_list = json.loads(order["cart_data"])
+                for item in cart_list:
+                    # ใช้ qty จริง ๆ จาก cart_data
+                    db.execute("""
+                        INSERT INTO order_items (order_id, id_menu, qty, price)
+                        VALUES (?, ?, ?, ?)
+                    """, (order_id, item['id_menu'], int(item['qty']), item['price']))
+
+
+            db.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        # log ข้อผิดพลาด
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
 
 
 @app.route('/order/<int:order_id>')
@@ -386,17 +410,18 @@ def order_details(order_id):
     db.close()
     return render_template('order_details.html', order=order, cart=cart, total_price=total_price)
 
-
 @app.route('/order_history')
 def order_history():
     if session.get("role") != "owner":
         return "Unauthorized", 403
 
     db = get_db()
-    # เลือกเฉพาะคำสั่งซื้อที่รับแล้ว
-    orders = db.execute("SELECT * FROM orders WHERE status = ?", ("รับแล้ว",)).fetchall()
+    # เลือกเฉพาะคำสั่งซื้อที่ status = 'รับแล้ว'
+    orders = db.execute("SELECT * FROM orders WHERE status = 'รับแล้ว' ORDER BY timestamp DESC").fetchall()
     db.close()
     return render_template('order_history.html', orders=orders)
+
+
 
 @app.route("/update-menu", methods=["POST"])
 def update_menu():
@@ -444,7 +469,121 @@ def update_menu():
     return redirect("/")
 
 
+def get_order_data(category=None, date_filter=None, start_date=None, end_date=None):
+    conn = sqlite3.connect("garden.db")
+    cursor = conn.cursor()
 
+    query = """
+        SELECT m.category, SUM(oi.qty) as total_sales
+        FROM order_items oi
+        JOIN list_menu m ON oi.id_menu = m.id_menu
+        JOIN orders o ON oi.order_id = o.id
+        WHERE 1=1
+    """
+    params = []
+
+    today = date.today()
+
+    # Filter by category
+    if category:
+        query += " AND TRIM(m.category) = ?"
+        params.append(category.strip())
+
+    # Filter by date
+    if date_filter == "today":
+        query += " AND DATE(o.timestamp) = ?"
+        params.append(today)
+    elif date_filter == "month":
+        query += " AND strftime('%Y-%m', o.timestamp) = ?"
+        params.append(today.strftime("%Y-%m"))
+    elif date_filter == "year":
+        query += " AND strftime('%Y', o.timestamp) = ?"
+        params.append(today.strftime("%Y"))
+    elif date_filter == "custom" and start_date and end_date:
+        query += " AND DATE(o.timestamp) BETWEEN ? AND ?"
+        params.extend([start_date, end_date])
+
+    query += " GROUP BY m.category"
+
+    cursor.execute(query, params)
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
+
+
+@app.route("/dashboard")
+def dashboard():
+    category = request.args.get("category", "")  # หมวดหมู่
+    date_filter = request.args.get("date_filter", "today")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
+
+    data = get_order_data(category, date_filter, start_date, end_date)
+    labels = [row[0] for row in data]
+    values = [row[1] for row in data]
+
+    return render_template(
+        "dashboard.html",
+        labels=labels,
+        values=values,
+        selected_category=category,
+        selected_date_filter=date_filter,
+        start_date=start_date,
+        end_date=end_date
+    )
+
+
+@app.route('/cancel_order/<int:order_id>', methods=['POST'])
+def cancel_order(order_id):
+    token = request.form.get('token')
+
+    with get_db() as db:
+        order = db.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if not order:
+            return "ไม่พบออร์เดอร์", 404
+
+        # ตรวจสอบว่า token ตรงและเป็นเจ้าของ
+        if 'user_id' not in session or session['user_id'] != order['user_id']:
+            return "ไม่สามารถยกเลิกออร์เดอร์นี้ได้", 403
+
+        # ตรวจสอบสถานะ
+        if order['status'] != 'รอดำเนินการ':
+            return "ไม่สามารถยกเลิกออร์เดอร์นี้ได้", 400
+
+        db.execute("UPDATE orders SET status = 'ยกเลิกแล้ว' WHERE id = ?", (order_id,))
+        db.commit()
+
+    return f"ออร์เดอร์ #{order_id} ถูกยกเลิกเรียบร้อยแล้ว ✅"
+
+@app.route('/api/orders', methods=['GET'])
+def api_orders():
+    """
+    ดึงคำสั่งซื้อทั้งหมดที่ยังไม่ "รับแล้ว" พร้อม cancel_token
+    ใช้ nickname/phone หรือไม่ก็ให้ลูกค้าใส่ cancel_token เพื่อยืนยันการยกเลิก
+    """
+    db = get_db()
+    
+    # ดึงทุกออร์เดอร์ที่ยังไม่ "รับแล้ว"
+    orders = db.execute("""
+        SELECT id, nickname, status, timestamp, cancel_token
+        FROM orders
+        WHERE status != 'รับแล้ว'
+        ORDER BY timestamp ASC
+    """).fetchall()
+    db.close()
+
+    orders_list = []
+    for order in orders:
+        orders_list.append({
+            "id": order["id"],
+            "nickname": order["nickname"],
+            "status": order["status"],
+            "timestamp": order["timestamp"],
+            "cancel_token": order["cancel_token"]
+        })
+
+    return jsonify({"orders": orders_list})
 
 if __name__ == '__main__':
     

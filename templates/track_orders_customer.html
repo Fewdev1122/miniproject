@@ -11,35 +11,89 @@
     <div class="order-column">ชื่อเล่น</div>
     <div class="order-column">สถานะ</div>
     <div class="order-column">เวลาสั่งซื้อ</div>
+    <div class="order-column">ยกเลิกออเดอร์</div>
   </div>
 
-  {% for order in orders %}
-  <div class="order-detail-row" id="order-{{ order['id'] }}">
+ {% for order in orders %}
+<div class="order-detail-row" data-order-id="{{ order['id'] }}" data-cancel-token="{{ order['cancel_token'] }}">
     <div class="order-column order-id">
-      <a href="{{ url_for('view_order', order_id=order['id']) }}"> #{{ order['id'] }} </a>
+        <a href="{{ url_for('view_order', order_id=order['id']) }}"> #{{ order['id'] }} </a>
     </div>
     <div class="order-column order-nickname">
-      {{ order['nickname'] }}
+        {{ order['nickname'] }}
     </div>
     <div class="order-column order-status">
-      <span class="status-text {{ order['status']|lower }}">
-        {{ order['status'] }}
-      </span>
+        <span class="status-text {{ order['status']|lower }}">
+            {{ order['status'] }}
+        </span>
     </div>
     <div class="order-column order-timestamp">
-      {{ order['timestamp'] }}
+        {{ order['timestamp'] }}
     </div>
-  </div>
-  {% else %}
-  <p>ไม่มีคำสั่งซื้อในระบบ</p>
-  {% endfor %}
+    <div class="order-column order-action">
+        <!-- จะเติมปุ่มด้วย JS -->
+    </div>
 </div>
+{% endfor %}
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const myToken = localStorage.getItem('cancel_token');
+
+    document.querySelectorAll('.order-detail-row').forEach(row => {
+        const orderToken = row.dataset.cancelToken;
+        const status = row.querySelector('.status-text').innerText;
+
+        const actionCell = row.querySelector('.order-action');
+        if(status === "รอดำเนินการ" && myToken && myToken === orderToken) {
+            const btn = document.createElement("button");
+            btn.innerText = "ยกเลิก";
+            btn.onclick = () => cancelOrder(row.dataset.orderId, myToken);
+            actionCell.appendChild(btn);
+        } else {
+            actionCell.innerText = "-";
+        }
+    });
+});
+
+async function cancelOrder(orderId, token) {
+    if (!confirm("คุณแน่ใจว่าจะยกเลิกออร์เดอร์นี้หรือไม่?")) return;
+
+    const formData = new FormData();
+    formData.append("token", token);
+
+    const res = await fetch(`/cancel_order/${orderId}`, {
+        method: "POST",
+        body: formData
+    });
+
+    const text = await res.text();
+    alert(text);
+    window.location.reload();
+}
+</script>
 
 <style>
-  .status-text { font-weight: bold; padding: 2px 6px; border-radius: 6px; }
-  .status-text.รอดำเนินการ { background: orange; color: white; }
-  .status-text.กำลังทำ { background: dodgerblue; color: white; }
-  .status-text.เสร็จแล้ว { background: seagreen; color: white; }
+  .status-text {
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+
+  .status-text.รอดำเนินการ {
+    background: orange;
+    color: white;
+  }
+
+  .status-text.กำลังทำ {
+    background: dodgerblue;
+    color: white;
+  }
+
+  .status-text.เสร็จแล้ว {
+    background: seagreen;
+    color: white;
+  }
 </style>
 
 {% endblock %}
